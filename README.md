@@ -165,9 +165,13 @@ To run the unit test suite to verify the graph structure, algorithms, and logic:
 
 The program outputs results in a Markdown-compatible table format, perfect for documentation logs:
 
-| File | Nodes | Edges | Terminals | Ratio | Time (ms) |
+| File | Nodes | Terms | Ratio | Time (ms) | Best Alpha |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| b01.stp | 50 | 63 | 9 | 0.4512 | 1.20 |
+| b01.stp | 50 | 5 | 0.4512 | 1.20 | 0.7 |
 
-
+  * **File:** `Instance filename.`
+  * **Nodes:** `Number of nodes in the graph.`
+  * **Terms:** `Number of terminal pairs.`
   * **Ratio:** `Solution Cost / Original Graph Total Cost` (Lower is better/sparser).
+  * **Time:** `Time in milliseconds it took to find the solution.`
+  * **Best Alpha:** `The value of alpha that yielded the best solution.`
