@@ -175,3 +175,17 @@ The program outputs results in a Markdown-compatible table format, perfect for d
   * **Ratio:** `Solution Cost / Original Graph Total Cost` (Lower is better/sparser).
   * **Time:** `Time in milliseconds it took to find the solution.`
   * **Best Alpha:** `The value of alpha that yielded the best solution.`
+  
+-----
+
+## Third-Party Libraries & Resources
+
+This project makes use of the following open-source libraries and resources:
+
+* **[CLI11](https://github.com/CLIUtils/CLI11)**: A command line parser for C++11 and beyond.
+    * **License**: [3-Clause BSD License](https://github.com/CLIUtils/CLI11/blob/main/LICENSE)
+    * **Copyright**: © 2017-2024 University of Cincinnati.
+
+* **[SteinForestProblem Instances](https://github.com/lalehghalami/SteinForestProblem)**: Benchmark datasets used for validating and testing the algorithms.
+    * **Reference**: Ghalami, L., & Grosu, D. (2022). "Approximation algorithms for Steiner forest: An experimental study". *Networks*, 79(2), 164-188.
+    * **DOI**: [10.1002/net.22046](https://doi.org/10.1002/net.22046)
