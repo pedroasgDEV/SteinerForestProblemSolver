@@ -39,7 +39,7 @@ The instances are organized into two main categories based on the graph type:
 
 ---
 
-## 📄 Instance File Format
+## Instance File Format
 
 Each instance file uses a plain text format divided into sections.
 
