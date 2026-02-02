@@ -1,10 +1,21 @@
 #ifndef GRAPH_HPP
-#define GRAPH_HPP  
+#define GRAPH_HPP               
 
+#include <ostream>
 #include <vector>
 #include <iostream>
-#include <iomanip>
-#include <queue>    
+#include <stdexcept>
+#include <queue>
+#include <tuple>
+
+/**
+ * @brief Represents an edge from the graph
+*/
+struct Edge {
+    int target;
+    float weight;
+    bool active;
+};
 
 /**
  * @class Graph
@@ -12,39 +23,54 @@
  */
 class Graph {
 protected:
-    std::vector<std::vector<float>> matrix;
-    size_t nNode;
+    std::vector<int> ptrs; ///< CSR row pointers. ptrs[i] marks the start of vertex i's edges in the edges vector. 
+    std::vector<Edge> edges; ///< Contiguous array containing all graph edges, grouped by source vertex.
     float totalWeight;
     bool isBidirectional;
+    int nNodes, nEdges;
 
 public:
     /**
-     * @brief Constructor with weights.
-     * @param matrix The graph in float matrix format.
-     * @param nNode Int number of vertices, default is 1.
-     * @param isBidirectional Bool if the graph is bidirectional, default is true.
+     * @brief Construtor Raw Data -> CSR.
+     * @param nNodes Number of nodes.
+     * @param edgeList tuple vector {origin:int, target:int, weight:float}.
+     * @param bidirectional if true create returns edges.
      */
-    Graph (const std::vector<std::vector<float>>& matrix, const bool isBidirectional = true):
-    matrix(matrix), nNode(matrix.size()), isBidirectional(isBidirectional) {
-        totalWeight = 0.0f;
-        for (int i = 0; i < nNode; ++i)
-            for (int j = i + 1; j < nNode; ++j) totalWeight += matrix[i][j];
-    };
+    Graph(const std::vector<std::tuple<int, int, float>>& edgeList, const int nNodes, const bool isBidirectional = true): 
+        totalWeight(0.0f), isBidirectional(isBidirectional), nNodes(nNodes) 
+    {
+        if (nNodes <= 0) throw std::runtime_error("ERROR: Number of nodes must be positive.");
+        if (edgeList.empty()) throw std::runtime_error("ERROR: edgeList cannot be empty");
 
-    /**
-     * @brief Default constructor.
-     * @param nNode Int number of vertices, default is 1.
-     * @param isBidirectional Bool if the graph is bidirectional, default is true.
-     */
-    Graph (const int nNode = 0, const bool isBidirectional = true): 
-    matrix(std::vector<std::vector<float>>(nNode,  std::vector<float>(nNode, 0))),
-    nNode(nNode), totalWeight(0.0f), isBidirectional(isBidirectional) {};
+        // Start with a temporary Adjacent List
+        std::vector<std::vector<Edge>> adj(nNodes);
+        for (const auto& edge : edgeList) {
+            int origin = std::get<0>(edge);
+            int target = std::get<1>(edge);
+            float weight = std::get<2>(edge);
 
-    /**
-     * @brief Deep Copy Constructor.
-     * @param other The graph to copy from.
-     */
-    Graph (const Graph& other) = default;
+            if (origin < 0 || origin >= nNodes || target < 0 || target >= nNodes)
+                throw std::runtime_error("ERROR: Edge index out of bounds.");
+
+            adj[origin].push_back({target, weight, true});
+            totalWeight += weight;
+            if (isBidirectional) adj[target].push_back({origin, weight, true});
+        }
+
+        // Flattening to CSR 
+        ptrs.reserve(nNodes + 1);
+        nEdges = edgeList.size() * (isBidirectional ? 2 : 1); 
+        edges.reserve(nEdges);
+
+        ptrs.push_back(0);
+        for (const auto& neighbors : adj) {
+            for (const auto& edge : neighbors) edges.push_back(edge);
+            ptrs.push_back(edges.size());
+        }
+    }
+    
+    // The empty default constructor should be deleted to avoid invalid graphs.
+    Graph() = delete;
 
     /**
      * @brief Virtual destructor.
@@ -52,17 +78,17 @@ public:
     virtual ~Graph () = default;
 
     /**
-     * @brief Get a matrix of weights of the graph. 
-     * @return Matrix of float.
+     * @brief Get the verticesEdgsPtr of the graph. 
+     * @return Int Vector.
      */
-    std::vector<std::vector<float>> getMatrix () const { return matrix; };
-
+    const std::vector<int>& getPtrs () const { return ptrs; };
+    
     /**
-     * @brief Get the number of vertices of the graph. 
-     * @return Int value;
+     * @brief Get the edges vector of the graph. 
+     * @return Edge Vector.
      */
-    size_t getNNode () const { return nNode; };
-
+    const std::vector<Edge>& getEdges () const { return edges; };
+     
     /**
      * @brief Get the sum of all weight of the graph
      * @return Float value;
@@ -70,60 +96,64 @@ public:
     float getTotalWeight () const { return totalWeight; };
 
     /**
-     * @brief If the graph is bidirectional. 
+     * @brief Get If the graph is bidirectional. 
      * @return Bool value;
      */
     bool getIsBidirectional () const { return isBidirectional; };
+    
+    /**
+     * @brief Get the number of nodes. 
+     * @return int value;
+     */
+    int getNNode () const { return nNodes; };
+ 
+    /**
+     * @brief Get the number of edges. 
+     * @return int value;
+     */
+    int getNEdges () const { return nEdges; };
 
     /**
-     * @brief Adds a edge between two vertices.
+     * @brief Turn all edges of the graph as non-active inactive
+     */
+    void inactiveAllEdges() { totalWeight = 0; for (auto& edge : edges) edge.active = false; }
+
+    /**
+     * @brief active a edge between two vertices.
      * @param from_id Int ID of the first vertex.
      * @param to_id Int ID of the second vertex.
-     * @param weight float Weight of the edge, default is 1.
      */
-    void addEdge (const int from_id, const int to_id, const float weight = 1)  {
-        // Verify if the vertices exists
-        try{
-            if(from_id > nNode || from_id < 0) throw from_id;
-            if(to_id > nNode || to_id < 0) throw to_id;
-        }
-        catch (int id) {
-            std::cout << "ERRO: Node " << id << "does not exist in this graph." << std::endl;
-            return;
-        }
+    void activeEdge (const int from_id, const int to_id) {
+        int edge_id = getEdge(from_id, to_id);
+        
+        if(edge_id == -1) return;
 
-        float last_weight = matrix[from_id][to_id]; // If already has a another edge
-        if(isBidirectional){
-            matrix[from_id][to_id] = weight;
-            matrix[to_id][from_id] = weight;
+        if(!edges[edge_id].active){
+            edges[edge_id].active = true;
+            totalWeight += edges[edge_id].weight;
+            
+            try { if(isBidirectional) edges[getEdge(to_id, from_id)].active = true; }
+            catch (...) { throw std::runtime_error("ERROR: the graph isn't bidirectional"); }
         }
-        else matrix[from_id][to_id] = weight;
-        totalWeight += weight - last_weight; // Mod total weight of the graph
-    };
+    };  
 
     /**
-     * @brief Removes a edge between two vertices.
+     * @brief inactive a edge between two vertices.
      * @param from_id Int ID of the first vertex.
      * @param to_id INt ID of the second vertex.
      */
-    void removeEdge (const int from_id, const int to_id) {
-        // Verify if the vertices exists
-        try{
-            if(from_id > nNode || from_id < 0) throw from_id;
-            if(to_id > nNode || to_id < 0) throw to_id;
-        }
-        catch (int id) {
-            std::cout << "ERRO: Node " << id << "does not exist in this graph." << std::endl;
-            return;
-        }
+    void inactiveEdge (const int from_id, const int to_id) {
+        int edge_id = getEdge(from_id, to_id);
+        
+        if(edge_id == -1) return;
 
-        float weight = matrix[from_id][to_id]; // Get the weight of the edge
-        if(isBidirectional){
-            matrix[from_id][to_id] = 0.0f;
-            matrix[to_id][from_id] = 0.0f;
+        if(edges[edge_id].active){
+            edges[edge_id].active = false;
+            totalWeight -= edges[edge_id].weight;
+            
+            try { if(isBidirectional) edges[getEdge(to_id, from_id)].active = false; }
+            catch (...) { throw std::runtime_error("ERROR: the graph isn't bidirectional"); }
         }
-        else matrix[from_id][to_id] = 0.0f;
-        totalWeight -= weight; // Mod total weight of the graph
     };
 
     /**
@@ -133,18 +163,14 @@ public:
      * @return Bool if the second vertex is reachable from the first.
      */
     bool isReachable (const int from_id, const int to_id) const {
-        // Verify if the vertices exists or are the same
-        try{
-            if(from_id > nNode || from_id < 0) throw from_id;
-            if(to_id > nNode || to_id < 0) throw to_id;
-        }
-        catch (int id) {
-            std::cout << "ERRO: Node " << id << "does not exist in this graph." << std::endl;
-            return false;
-        }
+        // Verify if the vertices exists 
+        if(from_id >= nNodes || from_id < 0) throw std::runtime_error("ERROR: The Node from_id does not exist in this graph.");
+        if(to_id >= nNodes || to_id < 0) throw std::runtime_error("ERROR: The Node to_id does not exist in this graph.");
+        
+        if(from_id == to_id) return true;
 
-        // Vector to mark visited sites and prevent infinite loops.
-        std::vector<bool> visited(nNode, false);
+        // Vector to mark visited nodes and prevent infinite loops.
+        std::vector<bool> visited(nNodes, false);
         
         // Queue for processing the nodes
         std::queue<int> q;
@@ -154,16 +180,17 @@ public:
 
         while (!q.empty()) {
             int u = q.front();
+            int u_ptr = ptrs[u];
+            int nxt_ptr = ptrs[u + 1];
             q.pop();
 
             if (u == to_id) return true;
 
-            for (int v = 0; v < nNode; v++) {
-                if (matrix[u][v] != 0.0f && !visited[v]) {
-                    visited[v] = true;
-                    q.push(v);
+            for (int crnt_edge = u_ptr; crnt_edge < nxt_ptr; crnt_edge++)
+                if (edges[crnt_edge].active && !visited[edges[crnt_edge].target]) {
+                    visited[edges[crnt_edge].target] = true;
+                    q.push(edges[crnt_edge].target);
                 }
-            }
         }
 
         return false;
@@ -171,56 +198,20 @@ public:
     };
 
     /**
-     * @brief Checks whether v_id is adjacent to u_id.
+     * @brief get the edge position between from_id and to_id.
      * @param from_id Int ID of the first vertex.
      * @param to_id Int ID of the second vertex.
-     * @return Bool if the vertices are adjacent.
+     * @return int edge position (If returns -1, the edge does'n exist.) 
      */
-    bool isAdjacent (const int from_id, const int to_id) const {
-        // Verify if the vertices exists or are the same
-        try{
-            if(from_id > nNode || from_id < 0) throw from_id;
-            if(to_id > nNode || to_id < 0) throw to_id;
-        }
-        catch (int id) {
-            std::cout << "ERRO: Node " << id << "does not exist in this graph." << std::endl;
-            return false;
-        }
-
-        return matrix[from_id][to_id] != 0.0f;
-    };
-
-    /**
-     * @brief Verify if the graphs are equals.
-     * @return Bool if are equals.
-     */
-    bool operator == (const Graph& other) const{
-        return (this->isBidirectional == other.isBidirectional &&
-                this->nNode == other.nNode &&
-                this->totalWeight == other.totalWeight &&
-                this->matrix == other.matrix);
-    };
-
-    /**
-     * @brief Verify if the graphs are not equals.
-     * @return Bool if are not equals.
-     */
-    bool operator != (const Graph& other) const { return !(*this == other); }
-
-    /**
-     * @brief Deep Copy Assignment Operator.
-     * @param other The graph to assign from.
-     * @return Reference to this graph.
-     */
-    Graph& operator = (const Graph& other){
-        if (this == &other) return *this;
-
-        this->matrix = other.matrix;
-        this->nNode = other.nNode;
-        this->isBidirectional = other.isBidirectional;
-        this->totalWeight = other.totalWeight;
-
-        return *this;
+    int getEdge (const int from_id, const int to_id) const {
+        // Verify if the vertices exists 
+        if(from_id >= nNodes || from_id < 0) throw std::runtime_error("ERROR: The Node from_id does not exist in this graph.");
+        if(to_id >= nNodes || to_id < 0) throw std::runtime_error("ERROR: The Node to_id does not exist in this graph."); 
+        
+        for (int crnt_edge = ptrs[from_id]; crnt_edge < ptrs[from_id + 1]; crnt_edge++)
+            if(edges[crnt_edge].target == to_id) return crnt_edge;
+        
+        return -1;
     };
 
     /**
@@ -230,20 +221,21 @@ public:
      * @return The output stream.
      */
     friend std::ostream& operator<<(std::ostream& out, const Graph& g) {
-        out << std::endl << "## Graph Adjacent Matrix" << std::endl;
-        out << "   ";
-        for (int j = 0; j < g.nNode; j++) {
-            out << std::setw(6) << j + 1;
-        }
-        out << std::endl;
+        out << std::endl << "## Graph implemented as Contiguous Adjacency Lists and CSR" << std::endl;
+        out << "Total Weight: " << g.totalWeight << std::endl;
+        out << "Is Bidirectional: " << ((g.isBidirectional) ? "True" : "False") << std::endl;
 
-        for (int i = 0; i < g.nNode; i++) {
-            out << std::setw(2) << i + 1 << ":";
-            for (int j = 0; j < g.nNode; j++) {
-                out << std::setw(6) << std::fixed << std::setprecision(1) << g.matrix[i][j];
+        out << std::endl << "### Edges of eatch Node" << std::endl;
+        for (int crnt_node = 0; crnt_node < g.nNodes; crnt_node++ ){
+            out << "Node " << crnt_node<< " ->";
+            
+            for (int crnt_edge = g.ptrs[crnt_node]; crnt_edge < g.ptrs[crnt_node + 1]; crnt_edge++){
+                if(!g.edges[crnt_edge].active) continue;
+                out << " {" << "Target " << g.edges[crnt_edge].target << ", Weight " << g.edges[crnt_edge].weight << "}";
             }
-            out << std::endl;
-        }
+
+            out << ";" << std::endl; 
+        } 
 
         return out;
     };
@@ -254,7 +246,7 @@ public:
 /**
  * @brief Checks if the graph contains only non-negative weights.
  * @param G a Graph obj
- * @return true if the graph has only non-negative weights, false if not.
+ * @return true if the graph has a negative weight, false if not.
  */
 bool hasNegativeWeights(const Graph& g);
 

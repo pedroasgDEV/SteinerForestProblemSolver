@@ -40,8 +40,7 @@ using ValidatorFunc = bool (*)(const Graph&, const std::vector<std::pair<int, in
  */
 class SteinerForest {
 protected:
-    Graph originalGraph;                        
-    Graph solutionGraph;                        
+    Graph graph;                        
     std::vector<std::pair<int, int>> terminals;
     float totalCost;                            
     bool solved;

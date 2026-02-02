@@ -3,27 +3,26 @@
 #include <cassert>
 
 #include "tests.hpp"
-#include "../utils/graph.hpp"
+#include "../utils/graph.hpp" 
+
 
 static void testConstructionAndBasics() {
     std::cout << "[Test] Construction and Basics..." << std::endl;
     
-    // Test empty constructor
-    Graph g1(5);
-    assert(g1.getNNode() == 5);
-    assert(g1.getIsBidirectional() == true);
+    // Graph: 0-1 (10), 1-2 (5)
+    auto g = Graph({ {0, 1, 10.0f}, {1, 2, 5.0f} }, 3, true);
+
+    // Basic Checks
+    assert(g.getNNode() == 3);
+    assert(g.getNEdges() == 4); // 2 edges * 2 directions = 4 physical edges
+    assert(g.getTotalWeight() == 15.0f); // (10+10+5+5)/2 = 15
     
-    // Test constructor with matrix
-    std::vector<std::vector<float>> inputMat = {
-        {0, 10, 0},
-        {10, 0, 5},
-        {0, 5, 0}
-    };
-    Graph g2(inputMat, true);
-    assert(g2.getNNode() == 3);
-    
-    // Verify matrix content 
-    assert(g2.getMatrix() == inputMat);
+    // Verify CSR content (Row Pointers)
+    // Node 0 has 1 neighbor -> ptr[0]=0, ptr[1]=1
+    // Node 1 has 2 neighbors -> ptr[1]=1, ptr[2]=3
+    // Node 2 has 1 neighbor -> ptr[2]=3, ptr[3]=4
+    std::vector<int> expectedPtr = {0, 1, 3, 4};
+    assert(g.getPtrs() == expectedPtr);
     
     std::cout << " -> Passed." << std::endl;
 }
@@ -31,53 +30,45 @@ static void testConstructionAndBasics() {
 static void testConstraintFunctions() {
     std::cout << "[Test] Constraint Functions..." << std::endl;
     
-    // Test true return
-    std::vector<std::vector<float>> inputMat = {
-        {0, 10, 0},
-        {10, 0, 5},
-        {0, 5, 0}
-    };
-    Graph g2(inputMat, true);
-    assert(hasNegativeWeights(g2) == true);
-    assert(isGraphConnected(g2) == true);
+    // Positive Connected Graph: 0-1, 1-2
+    auto g = Graph({ {0, 1, 10.0f}, {1, 2, 5.0f} }, 3, true);
+    
+    // Test 1: Normal Graph
+    assert(hasNegativeWeights(g) == false); // No negative weights
+    assert(isGraphConnected(g) == true);    // Is connected
 
-    // Test false to connect constraint
-    g2.removeEdge(0, 1);
-    assert(hasNegativeWeights(g2) == true);
-    assert(isGraphConnected(g2) == false);
+    // Test 2: Break connectivity (Deactivate edge 0-1)
+    g.inactiveEdge(0, 1); 
+    assert(isGraphConnected(g) == false);   // Node 0 became isolated
 
-    // Test false do negative weights
-    g2.addEdge(0, 1, -10);
-    assert(hasNegativeWeights(g2) == false);
-    assert(isGraphConnected(g2) == true);
+    // Test 3: Negative Weights
+    auto gNeg = Graph({ {0, 1, -10.0f} }, 2, true);
+    assert(hasNegativeWeights(gNeg) == true);
 
     std::cout << " -> Passed." << std::endl;
 }
 
-static void testAddRemoveEdge() {
-    std::cout << "[Test] Add and Remove Edges..." << std::endl;
+static void testActiveInactiveEdge() {
+    std::cout << "[Test] Active/Inactive Edges (Soft Deletion)..." << std::endl;
 
-    Graph g(3, true);
+    // Triangle Graph: 0-1 (10), 1-2 (20), 0-2 (30)
+    auto g = Graph({ {0, 1, 10.0f}, {1, 2, 20.0f}, {0, 2, 30.0f} }, 3, true);
 
-    g.addEdge(0, 1, 5.5f);
-
-    assert(g.getTotalWeight() == 5.5f);
+    float initialWeight = 10 + 20 + 30;
+    assert(g.getTotalWeight() == initialWeight);
     
-    // Check adjacency
-    assert(g.isAdjacent(0, 1) == true);
-    assert(g.isAdjacent(1, 0) == true);
-    assert(g.isAdjacent(0, 2) == false);
-
-    // Check the matrix directly
-    auto mat = g.getMatrix();
-    assert(mat[0][1] == 5.5f);
-
-    // Remove the edge
-    g.removeEdge(0, 1);
-    assert(g.isAdjacent(0, 1) == false);
-
-    // Check the total of weights
-    assert(g.getTotalWeight() == 0);
+    // 1. Remove edge 0-1
+    g.inactiveEdge(0, 1);
+    
+    // Weight must decrease by 10
+    assert(g.getTotalWeight() == (initialWeight - 10.0f));
+    
+    // BFS should not find path via 0-1 anymore (but might find via 0-2-1)
+    // Here we trust the weight check as proof of deactivation.
+    
+    // Reactivate
+    g.activeEdge(0, 1);
+    assert(g.getTotalWeight() == initialWeight);
 
     std::cout << " -> Passed." << std::endl;
 }
@@ -85,12 +76,12 @@ static void testAddRemoveEdge() {
 static void testUnidirectional() {
     std::cout << "[Test] Unidirectional Graph..." << std::endl;
 
-    Graph g(3, false); 
+    // 0 -> 1 (one way only)
+    auto g = Graph({ {0, 1, 10.0f} }, 2, false); 
     
-    g.addEdge(0, 1, 10.0f);
-
-    assert(g.isAdjacent(0, 1) == true);
-    assert(g.isAdjacent(1, 0) == false);
+    assert(g.getNEdges() == 1); // Only one physical edge
+    assert(g.isReachable(0, 1) == true);
+    assert(g.isReachable(1, 0) == false); // Return path does not exist
 
     std::cout << " -> Passed." << std::endl;
 }
@@ -98,48 +89,28 @@ static void testUnidirectional() {
 static void testReachability() {
     std::cout << "[Test] Reachability (BFS)..." << std::endl;
 
-    Graph g(4, true);
-    g.addEdge(0, 1);
-    g.addEdge(1, 2);
+    // Line Graph: 0 - 1 - 2    3 (isolated)
+    auto g = Graph({ {0, 1, 1.0f}, {1, 2, 1.0f} }, 4, true);
 
-    // Positive tests
+    // Positive Tests
     assert(g.isReachable(0, 1) == true);
-    assert(g.isReachable(0, 2) == true); 
+    assert(g.isReachable(0, 2) == true); // Transitive
     assert(g.isReachable(2, 0) == true);
 
-    // Negative tests
+    // Negative Tests
     assert(g.isReachable(0, 3) == false);
     assert(g.isReachable(1, 3) == false);
 
-    std::cout << " -> Passed." << std::endl;
-}
-
-static void testCopyAndEquality() {
-    std::cout << "[Test] Deep Copy and Operators..." << std::endl;
-
-    Graph g1(3, true);
-    g1.addEdge(0, 1, 10.0f);
-
-    // Verify Deep Copy
-    Graph g2(g1); 
-    assert(g1 == g2); 
-    g1.addEdge(1, 2, 5.0f);
-    assert(g2.isAdjacent(1, 2) == false); 
-    assert(g1 != g2); 
-
-    // Assignment Operator
-    Graph g3(10);
-    g3 = g1;
-    assert(g3 == g1);
-    assert(g3.isAdjacent(1, 2) == true);
+    // Dynamic Test: Cut the path in the middle
+    g.inactiveEdge(1, 2);
+    assert(g.isReachable(0, 2) == false); // 0 reaches 1, but 1 does not reach 2
 
     std::cout << " -> Passed." << std::endl;
 }
 
 static void testPrint() {
     std::cout << "[Test] Printing (Visual Check)..." << std::endl;
-    Graph g(3);
-    g.addEdge(0, 1, 1.5f);
+    auto g = Graph({ {0, 1, 1.5f}, {1, 2, 2.5f} }, 3, true);
     std::cout << g << std::endl; 
     std::cout << " -> Passed." << std::endl;
 }
@@ -147,15 +118,14 @@ static void testPrint() {
 void graphTests() {
     std::cout << std::endl;
     std::cout << "========================================" << std::endl;
-    std::cout << "      STARTING GRAPH TEST SUITE         " << std::endl;
+    std::cout << "      STARTING CSR GRAPH TEST SUITE     " << std::endl;
     std::cout << "========================================" << std::endl;
 
     testConstructionAndBasics();
     testConstraintFunctions();
-    testAddRemoveEdge();
+    testActiveInactiveEdge();
     testUnidirectional();
     testReachability();
-    testCopyAndEquality();
     testPrint();
 
     std::cout << "========================================" << std::endl;
