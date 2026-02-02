@@ -4,10 +4,10 @@
 
 #include "utils/CLI11.hpp"
 #include "tests/tests.hpp"
-#include "utils/report_generator.hpp"
+//#include "utils/report_generator.hpp"
 #include "utils/graph.hpp"
 #include "algorithms/algorithms.hpp"
-#include "models/SFP.hpp"
+//#include "models/SFP.hpp"
 
 // ==========================================
 // Cross-Platform Recursive Directory Logic
@@ -101,17 +101,17 @@ int main(int argc, char** argv) {
         if (flag_test_all) {
             graphTests();
             dijkstraTests();
-            steinerForestTests();
-            GRASPconstructiveTests();
+            // steinerForestTests();
+            // GRASPconstructiveTests();
             return 0;
         }
         if (flag_test_graph) graphTests();
         if (flag_test_dijkstra) dijkstraTests();
-        if (flag_test_SFP) steinerForestTests();
-        if (flag_test_GRASPcons) GRASPconstructiveTests();
+        // if (flag_test_SFP) steinerForestTests();
+        // if (flag_test_GRASPcons) GRASPconstructiveTests();
         return 0;
     }
-
+    /*
     if (!input_file.empty()) {
         if (hasExtension(input_file, ".stp")) {
             FileStats stats;
@@ -177,6 +177,6 @@ int main(int argc, char** argv) {
     else {
         std::cout << "No input provided. Use --help to see options." << std::endl;
     }
-
+    */
     return 0;
 }

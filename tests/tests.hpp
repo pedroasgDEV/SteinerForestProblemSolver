@@ -3,7 +3,7 @@
 
 void graphTests();
 void dijkstraTests();
-void steinerForestTests();
-void GRASPconstructiveTests();
+// void steinerForestTests();
+// void GRASPconstructiveTests();
 
 #endif

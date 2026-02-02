@@ -5,13 +5,28 @@
 #include "../utils/graph.hpp"
 
 /**
- * @brief Finds the shortest path between two vertices using Dijkstra's Algorithm.
- * @param start_id The ID of the starting vertex (1-based).
- * @param end_id The ID of the destination vertex (1-based).
- * @return std::pair<std::vector<int>, float> A sequence of node IDs representing the shortest path and the cost. 
- * Returns an empty vector if no path exists.
+ * @brief Structure to hold the result of the Dijkstra algorithm.
  */
-std::pair<std::vector<int>, float> dijkstra(const Graph& graph, int start_id, int end_id);
+struct DijkstraResult {
+    /** * @brief The reconstructed shortest path.
+     * Each element is a pair: <Node ID, Incoming Edge Index>.
+     * For the starting node, this value is -1.
+     */
+    std::vector<std::pair<int, int>> path;
+	
+    /// The total accumulated weight of the shortest path.
+    float cost;
+};
+
+/**
+ * @brief Finds the shortest path between two vertices using Dijkstra's Algorithm on a CSR Graph.
+ * @param graph The CSR Graph object.
+ * @param start_id The ID of the starting vertex (0-based).
+ * @param end_id The ID of the destination vertex (0-based).
+ * @return DijkstraResult A struct containing the path sequence (nodes and edge indices) and the total cost.
+ * If no path exists, returns an empty path and infinity cost.
+ */
+DijkstraResult dijkstra(const Graph& graph, const int start_id, const int end_id);
 
 /**
  * @brief Validates if the solution graph connects all terminal pairs.
