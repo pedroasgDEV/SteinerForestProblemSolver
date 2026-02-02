@@ -37,7 +37,7 @@ public:
      * @param bidirectional if true create returns edges.
      */
     Graph(const std::vector<std::tuple<int, int, float>>& edgeList, const int nNodes, const bool isBidirectional = true): 
-        nNodes(nNodes), isBidirectional(isBidirectional), totalWeight(0.0f) 
+        totalWeight(0.0f), isBidirectional(isBidirectional), nNodes(nNodes) 
     {
         if (nNodes <= 0) throw std::runtime_error("ERROR: Number of nodes must be positive.");
         if (edgeList.empty()) throw std::runtime_error("ERROR: edgeList cannot be empty");
@@ -116,7 +116,7 @@ public:
     /**
      * @brief Turn all edges of the graph as non-active inactive
      */
-    void inactiveAllEdges() { totalWeight = 0; for (auto edge : edges) edge.active = false; }
+    void inactiveAllEdges() { totalWeight = 0; for (auto& edge : edges) edge.active = false; }
 
     /**
      * @brief active a edge between two vertices.
