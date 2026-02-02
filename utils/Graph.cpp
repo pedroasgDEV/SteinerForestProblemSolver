@@ -1,4 +1,4 @@
-#include "graph.hpp"
+#include "Graph.hpp"
 
 bool hasNegativeWeights(const Graph& g) {
     for (auto i : g.getEdges()) if (i.weight < 0) return true;

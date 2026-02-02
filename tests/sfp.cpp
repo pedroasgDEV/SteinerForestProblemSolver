@@ -5,7 +5,6 @@
 #include <string>
 
 #include "tests.hpp"
-#include "../models/SFP.hpp"
 
 // ==========================================
 // Concrete Mock Class for Testing

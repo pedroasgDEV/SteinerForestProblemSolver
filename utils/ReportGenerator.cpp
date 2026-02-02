@@ -7,7 +7,7 @@
 #include <map>
 #include <cmath>
 
-#include "report_generator.hpp"
+#include "ReportGenerator.hpp"
 
 
 

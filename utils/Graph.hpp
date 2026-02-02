@@ -221,7 +221,8 @@ public:
      * @return The output stream.
      */
     friend std::ostream& operator<<(std::ostream& out, const Graph& g) {
-        out << std::endl << "## Graph implemented as Contiguous Adjacency Lists and CSR" << std::endl;
+        out << "-------------------------------------------------------" << std::endl;
+        out << "## Graph implemented as Contiguous Adjacency Lists and CSR" << std::endl;
         out << "Total Weight: " << g.totalWeight << std::endl;
         out << "Is Bidirectional: " << ((g.isBidirectional) ? "True" : "False") << std::endl;
 
@@ -235,7 +236,8 @@ public:
             }
 
             out << ";" << std::endl; 
-        } 
+        }
+        out << "-------------------------------------------------------" << std::endl;
 
         return out;
     };

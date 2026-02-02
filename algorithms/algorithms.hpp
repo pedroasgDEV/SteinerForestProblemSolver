@@ -2,7 +2,7 @@
 #define ALGORITHMS_HPP
 
 #include <vector>
-#include "../utils/graph.hpp"
+#include "../utils/Graph.hpp"
 
 /**
  * @brief Structure to hold the result of the Dijkstra algorithm.

@@ -4,10 +4,7 @@
 #include <cassert>
 #include <cmath>
 
-#include "../utils/graph.hpp"
-#include "../algorithms/algorithms.hpp" 
-
-
+#include "tests.hpp"
 
 void testDisjointPaths() {
     std::cout << "[Test] Constructive: Disjoint Paths... ";

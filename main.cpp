@@ -5,7 +5,7 @@
 #include "utils/CLI11.hpp"
 #include "tests/tests.hpp"
 //#include "utils/report_generator.hpp"
-#include "utils/graph.hpp"
+#include "utils/Graph.hpp"
 #include "algorithms/algorithms.hpp"
 //#include "models/SFP.hpp"
 

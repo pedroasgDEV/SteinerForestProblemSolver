@@ -12,7 +12,7 @@ set(SOURCES
     "main.cpp"
     
     # Utils
-    "utils/graph.cpp"
+    "utils/Graph.cpp"
     
     # Algorithms
     "algorithms/dijkstra.cpp"
@@ -20,6 +20,7 @@ set(SOURCES
     "tests/graph.cpp"
     "tests/dijkstra.cpp"
 )
+
 # Criar o executável apenas com os arquivos selecionados
 add_executable(steiner_forest ${SOURCES})
 
@@ -37,4 +38,4 @@ if(MSVC)
     target_compile_options(steiner_forest PRIVATE /W4)
 else()
     target_compile_options(steiner_forest PRIVATE -Wall -Wextra -pedantic)
-endif()
+    endif()
