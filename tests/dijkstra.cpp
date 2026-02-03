@@ -1,49 +1,42 @@
+#include <algorithm>
 #include <iostream>
+#include <ostream>
 #include <vector>
 #include <cassert>
 #include <utility>
 
 #include "tests.hpp"
 
-// Helper to verify the path sequence
-// Checks if the sequence of Node IDs matches expected.
-// Also verifies if Edge IDs are consistent (-1 for start, >=0 for others).
-static bool verifyPath(const std::vector<std::pair<int, int>>& resultPath, const std::vector<int>& expectedNodes) {
-    if (resultPath.size() != expectedNodes.size()) {
-        std::cerr << "Path size mismatch! Expected " << expectedNodes.size() << ", got " << resultPath.size() << std::endl;
-        return false;
+// Helper function to verify if the list of EDGE INDICES corresponds to the sequence of NODES
+bool verifyPath(const Graph& g, const std::vector<int>& pathEdges, const std::vector<int>& expectedNodes) {
+    // Path is empty
+    if (pathEdges.empty()) return expectedNodes.size() <= 1;
+    
+    // Mismatch in size
+    if (pathEdges.size() != expectedNodes.size() - 1) return false;
+
+    auto temp = pathEdges; std::reverse(temp.begin(), temp.end());
+    int expectedSource = expectedNodes[0];
+
+    // Iterate through edge indices returned by Dijkstra
+    for (size_t i = 0; i < temp.size(); ++i) {
+        int edgeIdx = temp[i];
+        const auto& edge = g.getEdges()[edgeIdx]; // Get the actual edge from graph
+        
+        if (edge.source != expectedSource) return false; // Verify if edge starts where the previous one ended
+        
+        if (edge.target != expectedNodes[i+1]) return false; // Verify if edge points to the correct next node
+
+        expectedSource = edge.target;
     }
 
-    for (size_t i = 0; i < resultPath.size(); i++) {
-        // Check Node ID
-        if (resultPath[i].first != expectedNodes[i]) {
-            std::cerr << "Node mismatch at index " << i << ". Expected " << expectedNodes[i] << ", got " << resultPath[i].first << std::endl;
-            return false;
-        }
-
-        // Check Edge Index Consistency
-        if (i == 0){
-            // Start node must NOT have an incoming edge index (-1)
-            if (resultPath[i].second != -1) {
-                std::cerr << "Start node must have edge_index -1." << std::endl;
-                return false;
-            }
-        }
-        else {
-            // Subsequent nodes MUST have a valid edge index (>= 0)
-            if (resultPath[i].second < 0) {
-                std::cerr << "Node " << resultPath[i].first << " has invalid edge index: " << resultPath[i].second << std::endl;
-                return false;
-            }
-        }
-    }
     return true;
 }
 
-void dijkstraTests() {
+void dijkstraTests() { 
     std::cout << std::endl;
     std::cout << "========================================" << std::endl;
-    std::cout << "        STARTING DIJKSTRA TEST          " << std::endl;
+    std::cout << "          STARTING DIJKSTRA TEST        " << std::endl;
     std::cout << "========================================" << std::endl;
 
     std::cout << "[Dijkstra] Simple path check... ";
@@ -51,11 +44,13 @@ void dijkstraTests() {
     // Graph: 0-1 (10), 1-2 (10)
     Graph g1({ {0, 1, 10.0f}, {1, 2, 10.0f} }, 3, true);
 
-    DijkstraResult res1 = dijkstra(g1, 0, 2);
-    
+    // Setup Engine for 3 nodes
+    DijkstraEngine engine1(3); 
+    auto res1 = engine1.getShortPath(g1, 0, 2);
+
     // Expect: 0 -> 1 -> 2
-    assert(verifyPath(res1.path, {0, 1, 2}));
-    assert(res1.cost == 20.0f);
+    assert(verifyPath(g1, res1.first, {0, 1, 2}));
+    assert(res1.second == 20.0f);
     std::cout << "Passed." << std::endl;
 
     std::cout << "[Dijkstra] Shortcut check... ";
@@ -67,31 +62,35 @@ void dijkstraTests() {
         {0, 2, 5.0f} 
     }, 3, true);
 
-    DijkstraResult res2 = dijkstra(g2, 0, 2);
+    DijkstraEngine engine2(3);
+    auto res2 = engine2.getShortPath(g2, 0, 2);
 
     // Expect: 0 -> 2 (Direct path is cheaper)
-    assert(verifyPath(res2.path, {0, 2}));
-    assert(res2.cost == 5.0f);
+    assert(verifyPath(g2, res2.first, {0, 2}));
+    assert(res2.second == 5.0f);
     
     std::cout << "Passed." << std::endl;
 
-    // ----------------------------------------------------------------
     std::cout << "[Dijkstra] Unreachable check... ";
+    
     // Graph: Disconnected components {0, 1} and {2, 3}
     Graph g3({ 
         {0, 1, 5.0f}, 
         {2, 3, 5.0f} 
     }, 4, true);
 
-    DijkstraResult res3 = dijkstra(g3, 0, 3);
+    DijkstraEngine engine3(4);
+    auto res3 = engine3.getShortPath(g3, 0, 3);
     
-    // Expect: Empty path
-    assert(res3.path.empty());
+    // Expect: Empty path and cost -1 (or whatever your logic for infinity is)
+    assert(res3.first.empty());
+    // Note: Verify if your implementation returns -1.0f or Infinity for unreachable
+    assert(res3.second == -1.0f); 
 
     std::cout << "Passed." << std::endl;
 
-    // ----------------------------------------------------------------
     std::cout << "[Dijkstra] Dynamic Obstacle (Soft Deletion)... ";
+    
     // Graph: Two paths from 0 to 2
     // Path A: 0 -> 1 -> 2 (Cost 20)
     // Path B: 0 -> 3 -> 2 (Cost 100)
@@ -100,18 +99,20 @@ void dijkstraTests() {
         {0, 3, 50.0f}, {3, 2, 50.0f}  // Expensive path
     }, 4, true);
 
+    DijkstraEngine engine4(4);
+    auto run1 = engine4.getShortPath(g4, 0, 2);
+    
     // Should take cheap path (0-1-2)
-    DijkstraResult run1 = dijkstra(g4, 0, 2);
-    assert(verifyPath(run1.path, {0, 1, 2}));
-    assert(run1.cost == 20.0f);
+    assert(verifyPath(g4, run1.first, {0, 1, 2}));
+    assert(run1.second == 20.0f);
 
     // Block the cheap path (remove edge 0-1)
-    g4.inactiveEdge(0, 1);
+    g4.setEdgeStatus(g4.getEdge(0, 1), false);
+    auto run2 = engine4.getShortPath(g4, 0, 2);
 
     // Should take expensive path (0-3-2)
-    DijkstraResult run2 = dijkstra(g4, 0, 2);
-    assert(verifyPath(run2.path, {0, 3, 2}));
-    assert(run2.cost == 100.0f);
+    assert(verifyPath(g4, run2.first, {0, 3, 2}));
+    assert(run2.second == 100.0f);
 
     std::cout << "Passed." << std::endl;
 

@@ -1,5 +1,5 @@
 #ifndef GRAPH_HPP
-#define GRAPH_HPP               
+#define GRAPH_HPP
 
 #include <ostream>
 #include <vector>
@@ -9,22 +9,26 @@
 #include <tuple>
 
 /**
- * @brief Represents an edge from the graph
-*/
+ * @struct Edge
+ * @brief Represents an edge from the graph.
+ * Optimized for SFP Metaheuristic: contains direct pointers to source and reverse edge.
+ */
 struct Edge {
-    int target;
+    int source;          ///< ID of the source node
+    int target;          ///< ID of the target node
+    int reverseEdgePtr;  ///< Index of the reverse edge. -1 if is not bidirectional.
     float weight;
     bool active;
 };
 
 /**
  * @class Graph
- * @brief Class defining a graph to SFP.
+ * @brief Class defining a graph to SFP using CSR (Compressed Sparse Row).
  */
 class Graph {
-protected:
-    std::vector<int> ptrs; ///< CSR row pointers. ptrs[i] marks the start of vertex i's edges in the edges vector. 
-    std::vector<Edge> edges; ///< Contiguous array containing all graph edges, grouped by source vertex.
+private:
+    std::vector<int> ptrs;   ///< CSR row pointers. ptrs[i] marks the start of node i's edges in the edges vector.
+    std::vector<Edge> edges; ///< Contiguous array containing all graph edges.
     float totalWeight;
     bool isBidirectional;
     int nNodes, nEdges;
@@ -42,8 +46,10 @@ public:
         if (nNodes <= 0) throw std::runtime_error("ERROR: Number of nodes must be positive.");
         if (edgeList.empty()) throw std::runtime_error("ERROR: edgeList cannot be empty");
 
-        // Start with a temporary Adjacent List
-        std::vector<std::vector<Edge>> adj(nNodes);
+        // Temporary Adjacency List
+        struct TempEdge { int target; float weight; };
+        std::vector<std::vector<TempEdge>> adj(nNodes);
+
         for (const auto& edge : edgeList) {
             int origin = std::get<0>(edge);
             int target = std::get<1>(edge);
@@ -52,167 +58,149 @@ public:
             if (origin < 0 || origin >= nNodes || target < 0 || target >= nNodes)
                 throw std::runtime_error("ERROR: Edge index out of bounds.");
 
-            adj[origin].push_back({target, weight, true});
+            adj[origin].push_back({target, weight});
             totalWeight += weight;
-            if (isBidirectional) adj[target].push_back({origin, weight, true});
+            if (isBidirectional) adj[target].push_back({origin, weight});
         }
 
-        // Flattening to CSR 
+        // Flattening to CSR
         ptrs.reserve(nNodes + 1);
         nEdges = edgeList.size() * (isBidirectional ? 2 : 1); 
         edges.reserve(nEdges);
 
         ptrs.push_back(0);
-        for (const auto& neighbors : adj) {
-            for (const auto& edge : neighbors) edges.push_back(edge);
+        for (int source = 0; source < nNodes; source++) {
+            // Initialize reverseEdgePtr to -1
+            for (const auto& edge : adj[source]) edges.push_back({source, edge.target, -1, edge.weight, true});
             ptrs.push_back(edges.size());
+        }
+        
+        // Linking Reverse Edges
+        if (isBidirectional) {
+            for (int i = 0; i < nEdges; i++) {
+                // Optimization: If already linked by its twin, skip
+                if (edges[i].reverseEdgePtr != -1) continue;
+
+                int source = edges[i].source;
+                int target = edges[i].target;
+
+                // Find the index of edge v -> u
+                int revIdx = getEdge(target, source);
+
+                if (revIdx != -1) {
+                    edges[i].reverseEdgePtr = revIdx;
+                    edges[revIdx].reverseEdgePtr = i;
+                }
+            }
         }
     }
     
-    // The empty default constructor should be deleted to avoid invalid graphs.
-    Graph() = delete;
-
-    /**
-     * @brief Virtual destructor.
-     */
+    Graph() = delete; // The empty default constructor should be deleted to avoid invalid graphs.
     virtual ~Graph () = default;
 
-    /**
-     * @brief Get the verticesEdgsPtr of the graph. 
-     * @return Int Vector.
-     */
+    // --- Getters ---
     const std::vector<int>& getPtrs () const { return ptrs; };
-    
-    /**
-     * @brief Get the edges vector of the graph. 
-     * @return Edge Vector.
-     */
     const std::vector<Edge>& getEdges () const { return edges; };
-     
-    /**
-     * @brief Get the sum of all weight of the graph
-     * @return Float value;
-     */
     float getTotalWeight () const { return totalWeight; };
-
-    /**
-     * @brief Get If the graph is bidirectional. 
-     * @return Bool value;
-     */
     bool getIsBidirectional () const { return isBidirectional; };
-    
-    /**
-     * @brief Get the number of nodes. 
-     * @return int value;
-     */
-    int getNNode () const { return nNodes; };
- 
-    /**
-     * @brief Get the number of edges. 
-     * @return int value;
-     */
+    int getNNodes () const { return nNodes; };
     int getNEdges () const { return nEdges; };
 
     /**
-     * @brief Turn all edges of the graph as non-active inactive
+     * @brief Turns all edges inactive.
+     * @param status True to activate, False to deactivate.
      */
-    void inactiveAllEdges() { totalWeight = 0; for (auto& edge : edges) edge.active = false; }
-
-    /**
-     * @brief active a edge between two vertices.
-     * @param from_id Int ID of the first vertex.
-     * @param to_id Int ID of the second vertex.
-     */
-    void activeEdge (const int from_id, const int to_id) {
-        int edge_id = getEdge(from_id, to_id);
-        
-        if(edge_id == -1) return;
-
-        if(!edges[edge_id].active){
-            edges[edge_id].active = true;
-            totalWeight += edges[edge_id].weight;
-            
-            try { if(isBidirectional) edges[getEdge(to_id, from_id)].active = true; }
-            catch (...) { throw std::runtime_error("ERROR: the graph isn't bidirectional"); }
+    void setAllEdgesStatus(const bool status) { 
+        totalWeight = 0;  
+        for (auto& edge : edges){
+            if(status == true) totalWeight += edge.weight;
+            edge.active = status;
         }
-    };  
+    }
 
     /**
-     * @brief inactive a edge between two vertices.
-     * @param from_id Int ID of the first vertex.
-     * @param to_id INt ID of the second vertex.
+     * @brief Sets the active status of an edge by its direct INDEX.
+     * This is the O(1) method used by the Metaheuristic.
+     * @param edgeIdx Index in the edges vector.
+     * @param status True to activate, False to deactivate.
      */
-    void inactiveEdge (const int from_id, const int to_id) {
-        int edge_id = getEdge(from_id, to_id);
-        
-        if(edge_id == -1) return;
+    void setEdgeStatus(int edgeIdx, bool status) {
+        if (edgeIdx < 0 || edgeIdx >= nEdges) throw std::runtime_error("ERROR: Edge out of bounds.");
 
-        if(edges[edge_id].active){
-            edges[edge_id].active = false;
-            totalWeight -= edges[edge_id].weight;
-            
-            try { if(isBidirectional) edges[getEdge(to_id, from_id)].active = false; }
-            catch (...) { throw std::runtime_error("ERROR: the graph isn't bidirectional"); }
-        }
-    };
+        Edge& temp = edges[edgeIdx];
+        
+        if(temp.active == status) return;
+        temp.active = status;
+        
+        if (status) totalWeight += temp.weight;
+        else totalWeight -= temp.weight;
+
+        if(isBidirectional) edges[temp.reverseEdgePtr].active = status;
+    } 
 
     /**
-     * @brief Checks whether vertex v_id is reachable from u_id with BFS.
-     * @param from_id Int ID of the first vertex.
-     * @param to_id Int ID of the second vertex.
-     * @return Bool if the second vertex is reachable from the first.
+     * @brief Checks whether node target is reachable from source with BFS.
+     * @param source Int ID of the first node.
+     * @param target Int ID of the second node.
+     * @return Bool if the second node is reachable from the first.
+     * Optimized with Lazy Reset (Token) and Static Memory.
      */
-    bool isReachable (const int from_id, const int to_id) const {
-        // Verify if the vertices exists 
-        if(from_id >= nNodes || from_id < 0) throw std::runtime_error("ERROR: The Node from_id does not exist in this graph.");
-        if(to_id >= nNodes || to_id < 0) throw std::runtime_error("ERROR: The Node to_id does not exist in this graph.");
+    bool isReachable (const int source, const int target) const {
+        if(source >= nNodes || source < 0) throw std::runtime_error("ERROR: Node from_id out of bounds.");
+        if(target >= nNodes || target < 0) throw std::runtime_error("EROOR: Node to_id out of bounds.");
         
-        if(from_id == to_id) return true;
+        if(source == target) return true;
 
-        // Vector to mark visited nodes and prevent infinite loops.
-        std::vector<bool> visited(nNodes, false);
+        //! Warning: This makes the method Thread-Unsafe. I will change it in the next version to add parallism in Metaheuristic algs.
+        static std::vector<int> visitedToken;
+        static std::vector<int> q; // Vector used as a Queue
+        static int currentToken = 0;
         
-        // Queue for processing the nodes
-        std::queue<int> q;
+        // Resize only if the graph grew
+        if ((int) visitedToken.size() < nNodes) { visitedToken.resize(nNodes, 0); q.resize(nNodes); }
 
-        visited[from_id] = true;
-        q.push(from_id);
+        currentToken++;
+        int head = 0;
+        int tail = 0;
+        q[tail++] = source;
+        visitedToken[source] = currentToken;
 
-        while (!q.empty()) {
-            int u = q.front();
-            int u_ptr = ptrs[u];
-            int nxt_ptr = ptrs[u + 1];
-            q.pop();
+        while (head < tail) {
+            int u = q[head++];
 
-            if (u == to_id) return true;
+            if (u == target) return true;
 
-            for (int crnt_edge = u_ptr; crnt_edge < nxt_ptr; crnt_edge++)
-                if (edges[crnt_edge].active && !visited[edges[crnt_edge].target]) {
-                    visited[edges[crnt_edge].target] = true;
-                    q.push(edges[crnt_edge].target);
+            for (int i = ptrs[u]; i < ptrs[u + 1]; i++) {
+                const auto& edge = edges[i];
+                
+                if (edge.active) {
+                    int v = edge.target;
+                    
+                    if (visitedToken[v] != currentToken) {
+                        visitedToken[v] = currentToken;
+                        q[tail++] = v;
+                    }
                 }
+            }
         }
-
         return false;
-
-    };
+    }
 
     /**
-     * @brief get the edge position between from_id and to_id.
-     * @param from_id Int ID of the first vertex.
-     * @param to_id Int ID of the second vertex.
-     * @return int edge position (If returns -1, the edge does'n exist.) 
+     * @brief get the edge position between source and target.
+     * @param source Int ID of the first node.
+     * @param target Int ID of the second node.
+     * @return int edge position (If returns -1, the edge does'n exist.). 
      */
-    int getEdge (const int from_id, const int to_id) const {
+    int getEdge (const int source, const int target) const {
         // Verify if the vertices exists 
-        if(from_id >= nNodes || from_id < 0) throw std::runtime_error("ERROR: The Node from_id does not exist in this graph.");
-        if(to_id >= nNodes || to_id < 0) throw std::runtime_error("ERROR: The Node to_id does not exist in this graph."); 
+        if(source >= nNodes || source < 0) throw std::runtime_error("ERROR: The Node from_id does not exist in this graph.");
+        if(target >= nNodes || target < 0) throw std::runtime_error("ERROR: The Node to_id does not exist in this graph."); 
         
-        for (int crnt_edge = ptrs[from_id]; crnt_edge < ptrs[from_id + 1]; crnt_edge++)
-            if(edges[crnt_edge].target == to_id) return crnt_edge;
-        
+        for (int i = ptrs[source]; i < ptrs[source + 1]; i++) if(edges[i].target == target) return i;
+
         return -1;
-    };
+    }
 
     /**
      * @brief Overloads the << operator to print the graph.
@@ -221,8 +209,8 @@ public:
      * @return The output stream.
      */
     friend std::ostream& operator<<(std::ostream& out, const Graph& g) {
-        out << "-------------------------------------------------------" << std::endl;
-        out << "## Graph implemented as Contiguous Adjacency Lists and CSR" << std::endl;
+        out << std::endl << "-----------------------------------------------------------------------------" << std::endl;
+        out << std::endl << "## Graph implemented as Contiguous Adjacency Lists and CSR" << std::endl;
         out << "Total Weight: " << g.totalWeight << std::endl;
         out << "Is Bidirectional: " << ((g.isBidirectional) ? "True" : "False") << std::endl;
 
@@ -237,26 +225,53 @@ public:
 
             out << ";" << std::endl; 
         }
-        out << "-------------------------------------------------------" << std::endl;
+        out << std::endl << "-----------------------------------------------------------------------------" << std::endl;
 
         return out;
-    };
+    }
 };
 
-//---------------- Graphs Constraint Functions ----------------
+//---------------- Helper Functions ----------------
 
 /**
  * @brief Checks if the graph contains only non-negative weights.
- * @param G a Graph obj
+ * @param g a Graph obj
  * @return true if the graph has a negative weight, false if not.
  */
-bool hasNegativeWeights(const Graph& g);
+inline bool hasNegativeWeights(const Graph& g) {
+    for (const auto& edge : g.getEdges()) if (edge.active && edge.weight < 0) return true;
+    return false;
+}
 
 /**
  * @brief Checks if the graph is connected using BFS.
- * @param G a Graph obj
+ * @param g a Graph obj.
  * @return true if the graph is connected, false if not.
  */
-bool isGraphConnected(const Graph& g);
+inline bool isGraphConnected(const Graph& g) {
+    int count = 0;
+    std::vector<bool> visited(g.getNNodes(), false);
+    std::queue<int> q;
+
+    visited[0] = true;
+    q.push(0);
+    count++;
+
+    const auto& ptr = g.getPtrs();
+    const auto& edges = g.getEdges();
+
+    while(!q.empty()){
+        int u = q.front(); q.pop();
+
+        for(int i = ptr[u]; i < ptr[u+1]; ++i)
+            if(edges[i].active && !visited[edges[i].target]){
+                visited[edges[i].target] = true;
+                count++;
+                q.push(edges[i].target);
+            }
+    }
+
+    return count == g.getNNodes();
+}
 
 #endif

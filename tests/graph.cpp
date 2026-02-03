@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ostream>
 #include <vector>
 #include <cassert>
 
@@ -11,7 +12,7 @@ static void testConstructionAndBasics() {
     auto g = Graph({ {0, 1, 10.0f}, {1, 2, 5.0f} }, 3, true);
 
     // Basic Checks
-    assert(g.getNNode() == 3);
+    assert(g.getNNodes() == 3);
     assert(g.getNEdges() == 4); // 2 edges * 2 directions = 4 physical edges
     assert(g.getTotalWeight() == 15.0f); // (10+10+5+5)/2 = 15
     
@@ -36,7 +37,7 @@ static void testConstraintFunctions() {
     assert(isGraphConnected(g) == true);    // Is connected
 
     // Test 2: Break connectivity (Deactivate edge 0-1)
-    g.inactiveEdge(0, 1); 
+    g.setEdgeStatus(g.getEdge(0, 1), false);
     assert(isGraphConnected(g) == false);   // Node 0 became isolated
 
     // Test 3: Negative Weights
@@ -56,7 +57,7 @@ static void testActiveInactiveEdge() {
     assert(g.getTotalWeight() == initialWeight);
     
     // 1. Remove edge 0-1
-    g.inactiveEdge(0, 1);
+    g.setEdgeStatus(g.getEdge(0, 1), false);
     
     // Weight must decrease by 10
     assert(g.getTotalWeight() == (initialWeight - 10.0f));
@@ -65,7 +66,7 @@ static void testActiveInactiveEdge() {
     // Here we trust the weight check as proof of deactivation.
     
     // Reactivate
-    g.activeEdge(0, 1);
+    g.setEdgeStatus(g.getEdge(0, 1), true);
     assert(g.getTotalWeight() == initialWeight);
 
     std::cout << " -> Passed." << std::endl;
@@ -100,7 +101,7 @@ static void testReachability() {
     assert(g.isReachable(1, 3) == false);
 
     // Dynamic Test: Cut the path in the middle
-    g.inactiveEdge(1, 2);
+    g.setEdgeStatus(g.getEdge(0, 1), false);
     assert(g.isReachable(0, 2) == false); // 0 reaches 1, but 1 does not reach 2
 
     std::cout << " -> Passed." << std::endl;

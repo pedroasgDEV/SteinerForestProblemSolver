@@ -11,9 +11,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(SOURCES
     "main.cpp"
     
-    # Utils
-    "utils/Graph.cpp"
-    
     # Algorithms
     "algorithms/dijkstra.cpp"
     

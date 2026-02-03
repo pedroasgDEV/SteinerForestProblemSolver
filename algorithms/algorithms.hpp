@@ -1,38 +1,53 @@
 #ifndef ALGORITHMS_HPP
 #define ALGORITHMS_HPP
 
+#include <utility>
+#include <vector>
+#include <queue>
+
 #include <vector>
 #include "../utils/Graph.hpp"
 
 /**
- * @brief Structure to hold the result of the Dijkstra algorithm.
+ * @class DijkstraEngine
+ * @brief Helper class designed to execute Dijkstra's algorithm repeatedly with high performance.
+ * * This class uses persistent memory and a token-based system (Lazy Reset) 
+ * to avoid expensive O(N) memory allocations and initializations on every call.
  */
-struct DijkstraResult {
-    /** * @brief The reconstructed shortest path.
-     * Each element is a pair: <Node ID, Incoming Edge Index>.
-     * For the starting node, this value is -1.
+class DijkstraEngine {
+private:
+    std::vector<float> dist;
+    std::vector<int> visitedToken;
+    std::vector<std::pair<int, int>> parent; // Stores the predecessor {node, edge} of each node for path reconstruction.
+    int nNodes;
+    int currentToken; // The "timestamp" or ID of the current Dijkstra execution.
+
+    using Pii = std::pair<float, int>;
+    std::priority_queue<Pii, std::vector<Pii>, std::greater<Pii>> pq;
+
+public:
+    /**
+     * @brief Constructor. Allocates memory once.   
+     * @param nodes Total number of nodes in the graph.
      */
-    std::vector<std::pair<int, int>> path;
-	
-    /// The total accumulated weight of the shortest path.
-    float cost;
+    DijkstraEngine(int nodes) : nNodes(nodes), currentToken(0) {
+        // Resize vectors once to prevent heap fragmentation during execution.
+        dist.resize(nNodes);
+        parent.resize(nNodes);
+        visitedToken.resize(nNodes, 0);
+    }
+    
+    /**
+     * @brief Computes the shortest path between source and target.
+     * @param graph The reference graph (CSR).
+     * @param source The starting node ID.
+     * @param target The destination node ID.
+     * @return A pair containing: 
+     * 1. std::vector<int>: The sequence of edges (path). Empty if unreachable.
+     * 2. float: The total cost of the path.
+     */
+    std::pair<std::vector<int>, float> getShortPath(const Graph& graph, const int source, const int target); 
 };
-
-/**
- * @brief Finds the shortest path between two vertices using Dijkstra's Algorithm on a CSR Graph.
- * @param graph The CSR Graph object.
- * @param start_id The ID of the starting vertex (0-based).
- * @param end_id The ID of the destination vertex (0-based).
- * @return DijkstraResult A struct containing the path sequence (nodes and edge indices) and the total cost.
- * If no path exists, returns an empty path and infinity cost.
- */
-DijkstraResult dijkstra(const Graph& graph, const int start_id, const int end_id);
-
-/**
- * @brief Validates if the solution graph connects all terminal pairs.
- * The solution F must ensure that all vertices of each Ti belong to the same connected component.
- */
-bool validateSolution(const Graph& solution, const std::vector<std::pair<int, int>>& terminals);
 
 /**
  * @brief GRASP Constructive Heuristic.
