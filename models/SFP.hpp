@@ -1,4 +1,4 @@
-#ifndef SFP_HPP
+#ifndef SFP_HPP                                
 #define SFP_HPP
 
 #include <iostream>
@@ -15,7 +15,7 @@
 class SFPProblem;
 class SFPSolution;
 
-enum class MoveType { ADD, REMOVE, SWAP };
+enum class MoveType { ADD, REMOVE};
 
 /**
  * @struct SFPMove
@@ -40,19 +40,19 @@ struct SFPMove {
  */
 class SFPSolution {
  private:
-  const SFPProblem* problem;     // Reference to context (Flyweight)
-  std::vector<int> activeEdges;  // Bitmask
-  float currentCost;             // Objective value cache
+  const SFPProblem* problem;      // Reference to context (Flyweight)
+  std::vector<bool> activeEdges;  // Bitmask
+  float currentCost;              // Objective value cache
 
  public:
-  SFPSolution(const SFPProblem& prob, bool startEmpty = true);
+  SFPSolution(const SFPProblem& problem, bool startEmpty = true);
 
   // Getters and Helpers
   float getObjectiveValue() const { return currentCost; }
   bool isFeasible() const;
   bool isEdgeActive(int idx) const { return activeEdges[idx]; }
   const SFPProblem& getProblem() const { return *problem; }
-  void applySolution();  // Apply the solution to the problem
+  void applySolution(const bool inplace = false);  // Apply the solution to the problem
 
   // --- Low Level Operations (Used by Moves) ---
   void addEdge(int edgeIdx);
@@ -115,10 +115,11 @@ class SFPProblem {
   mutable std::shared_ptr<RemoveNeighbourhood> l_nbhood;
 
  public:
-  SFPProblem(const std::string& filename);
   explicit SFPProblem(std::shared_ptr<Graph> g,
                       const std::vector<std::pair<int, int>>& terminals)
-      : graph(g), terminals(terminals), instanceName("Manual") {}
+      : graph(g), terminals(terminals), instanceName("Manual") {
+        g->setAllEdgesStatus(false);
+      }
 
   // Factories
   SFPSolution empty_solution() const;
