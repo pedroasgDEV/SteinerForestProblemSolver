@@ -6,12 +6,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(SOURCES
     "main.cpp"
+
+    "algorithms/grasp_constructive.cpp"
     
     "models/problem.cpp"
     "models/solution.cpp"
     "models/neighbourhood.cpp"
 
+
     "tests/dsu.cpp"    
+    "tests/grasp_constructive.cpp"    
     "tests/graph.cpp"
     "tests/dijkstra.cpp"
     "tests/sfp.cpp"

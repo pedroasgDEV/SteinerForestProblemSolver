@@ -5,14 +5,10 @@
 #include "tests/tests.hpp"
 #include "utils/CLI11.hpp"
 // #include "utils/report_generator.hpp"
-// #include "algorithms/algorithms.hpp"
+// #include "algorithms/Solver.hpp"
 // #include "utils/Graph.hpp"
 // #include "utils/DSU.hpp"
 // #include "models/SFP.hpp"
-
-// ==========================================
-// Cross-Platform Recursive Directory Logic
-// ==========================================
 
 #ifdef _WIN32
 #include <windows.h>
@@ -124,14 +120,14 @@ void getFilesInDirectory(const std::string& dirPath,
         dijkstraTests();
         dsuTests();
         steinerForestTests();
-        // GRASPconstructiveTests();
+        GRASPconstructiveTests();
         return 0;
       }
       if (flag_test_graph) graphTests();
       if (flag_test_dijkstra) dijkstraTests();
       if (flag_test_DSU) dsuTests();
       if (flag_test_SFP) steinerForestTests();
-      // if (flag_test_GRASPcons) GRASPconstructiveTests();
+      if (flag_test_GRASPcons) GRASPconstructiveTests();
       return 0;
     }
     /*

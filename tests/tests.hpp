@@ -3,6 +3,7 @@
 
 #include <cassert>
 
+#include "../algorithms/Solver.hpp"
 #include "../models/SFP.hpp"
 #include "../utils/DSU.hpp"
 #include "../utils/Dijkstra.hpp"
@@ -12,6 +13,6 @@ void graphTests();
 void dijkstraTests();
 void dsuTests();
 void steinerForestTests();
-// void GRASPconstructiveTests();
+void GRASPconstructiveTests();
 
 #endif
