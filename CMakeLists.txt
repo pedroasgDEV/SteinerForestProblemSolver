@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(SOURCES
     "main.cpp"
 
-    "algorithms/grasp_constructive.cpp"
+    "algorithms/constructive.cpp"
     
     "models/problem.cpp"
     "models/solution.cpp"
@@ -15,7 +15,7 @@ set(SOURCES
 
 
     "tests/dsu.cpp"    
-    "tests/grasp_constructive.cpp"    
+    "tests/constructive.cpp"    
     "tests/graph.cpp"
     "tests/dijkstra.cpp"
     "tests/sfp.cpp"
