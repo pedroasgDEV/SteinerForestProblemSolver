@@ -1,9 +1,17 @@
 #ifndef TESTS_HPP
-#define TESTS_HPP  
+#define TESTS_HPP
+
+#include <cassert>
+
+#include "../models/SFP.hpp"
+#include "../utils/DSU.hpp"
+#include "../utils/Dijkstra.hpp"
+#include "../utils/Graph.hpp"
 
 void graphTests();
 void dijkstraTests();
-// void steinerForestTests();
+void dsuTests();
+void steinerForestTests();
 // void GRASPconstructiveTests();
 
 #endif
