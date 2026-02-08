@@ -113,7 +113,7 @@ struct Graph {
    */
   friend std::ostream& operator<<(std::ostream& out, const Graph& g) {
     out << std::endl << "-------------------------------------------------------------------" << std::endl;
-    out << std::endl << "## Graph implemented as Contiguous Adjacency Lists and CSR" << std::endl;
+    out << "## Graph implemented as Contiguous Adjacency Lists and CSR" << std::endl;
     out << "Total Weight: " << g.totalWeight << std::endl;
 
     out << std::endl << "### Edges of eatch Node" << std::endl;
@@ -125,7 +125,7 @@ struct Graph {
 
       out << ";" << std::endl;
     }
-    out << std::endl << "-------------------------------------------------------------------"<< std::endl;
+    out << "-------------------------------------------------------------------"<< std::endl;
 
     return out;
   }

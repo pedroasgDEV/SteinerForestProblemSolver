@@ -9,9 +9,15 @@ set(SOURCES
     
     # Algorithms
     "algorithms/dijkstra.cpp"
+
+    "models/problem.cpp"
+    "models/solution.cpp"
+    "models/neighbourhood.cpp"
+
     "tests/dsu.cpp"    
     "tests/graph.cpp"
     "tests/dijkstra.cpp"
+    "tests/sfp.cpp"
 )
 
 add_executable(steiner_forest ${SOURCES})

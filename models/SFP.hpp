@@ -1,4 +1,4 @@
-#ifndef SFP_HPP                                
+#ifndef SFP_HPP
 #define SFP_HPP
 
 #include <iostream>
@@ -9,13 +9,14 @@
 #include <utility>
 #include <vector>
 
+#include "../utils/DSU.hpp"
 #include "../utils/Graph.hpp"
 
 // Forward declarations
 class SFPProblem;
 class SFPSolution;
 
-enum class MoveType { ADD, REMOVE};
+enum class MoveType { ADD, REMOVE };
 
 /**
  * @struct SFPMove
@@ -23,14 +24,13 @@ enum class MoveType { ADD, REMOVE};
  */
 struct SFPMove {
   MoveType type;
-  int edgeIndex;
-  float costDelta;
+  int edgeIndex;    ///< Index in the graph edges vector
+  float costDelta;  ///< Pre-calculated cost of the move
 
   SFPMove(MoveType t, int idx, float delta)
       : type(t), edgeIndex(idx), costDelta(delta) {}
 
   void apply(SFPSolution& sol) const;
-
   void undo(SFPSolution& sol) const;
 };
 
@@ -39,35 +39,35 @@ struct SFPMove {
  * @brief Mutable state of the SFP.
  */
 class SFPSolution {
+  friend class SFPProblem;
+  friend struct SFPMove;
+
  private:
   const SFPProblem* problem;      // Reference to context (Flyweight)
   std::vector<bool> activeEdges;  // Bitmask
   float currentCost;              // Objective value cache
 
+  // Internal helpers (updates bitmask and reverse edge sync)
+  void internalAdd(int edgeIdx);
+  void internalRemove(int edgeIdx);
+
  public:
-  SFPSolution(const SFPProblem& problem, bool startEmpty = true);
+  explicit SFPSolution(const SFPProblem& problem);
 
   // Getters and Helpers
   float getObjectiveValue() const { return currentCost; }
-  bool isFeasible() const;
-  bool isEdgeActive(int idx) const { return activeEdges[idx]; }
   const SFPProblem& getProblem() const { return *problem; }
-  void applySolution(const bool inplace = false);  // Apply the solution to the problem
-
-  // --- Low Level Operations (Used by Moves) ---
-  void addEdge(int edgeIdx);
-  void removeEdge(int edgeIdx);
+  bool isFeasible(
+      DSU& dsu) const;  ///< Validates connectivity using an external DSU.
+  bool isEdgeActive(int idx) const {
+    return activeEdges[idx];
+  }  ///< Verify if the edge are present in the solution.
 
   // Overloads
-  bool operator==(const SFPSolution& other);
-  bool operator!=(const SFPSolution& other);
-  bool operator>=(const SFPSolution& other);
-  bool operator<=(const SFPSolution& other);
-  bool operator>(const SFPSolution& other);
-  bool operator<(const SFPSolution& other);
+  bool operator>(const SFPSolution& other) const;
+  bool operator<(const SFPSolution& other) const;
 
-  friend std::iostream operator<<(std::ostream& out,
-                                  const SFPSolution& solution);
+  friend std::ostream& operator<<(std::ostream& out, const SFPSolution& sol);
 };
 
 /**
@@ -81,7 +81,6 @@ class SFPNeighborhood {
  public:
   explicit SFPNeighborhood(const SFPProblem& p) : problem(p) {}
   virtual ~SFPNeighborhood() = default;
-
   virtual std::vector<SFPMove> moves(const SFPSolution& sol) = 0;
 };
 
@@ -110,33 +109,25 @@ class SFPProblem {
   std::vector<std::pair<int, int>> terminals;
   std::string instanceName;
 
-  // Lazy initialization of neighborhoods (Flyweight parts)
-  mutable std::shared_ptr<AddNeighbourhood> c_nbhood;
-  mutable std::shared_ptr<RemoveNeighbourhood> l_nbhood;
-
  public:
   explicit SFPProblem(std::shared_ptr<Graph> g,
-                      const std::vector<std::pair<int, int>>& terminals)
-      : graph(g), terminals(terminals), instanceName("Manual") {
-        g->setAllEdgesStatus(false);
-      }
+                      const std::vector<std::pair<int, int>>& terminals);
+
+  SFPProblem() : graph(nullptr), instanceName("Empty") {}
 
   // Factories
   SFPSolution empty_solution() const;
   SFPSolution random_solution() const;
-
-  // Neighborhood Access
-  std::shared_ptr<AddNeighbourhood> construction_neighbourhood() const;
-  std::shared_ptr<RemoveNeighbourhood> local_neighbourhood() const;
 
   // Getters and Helpers
   const std::shared_ptr<Graph> getGraphPtr() const { return graph; }
   const std::vector<std::pair<int, int>>& getTerminals() const {
     return terminals;
   }
-  int getNEdges() const { return graph->getNEdges(); }
-  int getNNodes() const { return graph->getNNodes(); }
+  int getNEdges() const { return graph ? graph->nEdges : 0; }
+  int getNNodes() const { return graph ? graph->nNodes : 0; }
   std::string getName() const { return instanceName; }
+  void setName(const std::string name) { instanceName = name; }
 
   // Overloads
   /**
