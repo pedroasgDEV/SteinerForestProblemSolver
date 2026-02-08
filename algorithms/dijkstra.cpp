@@ -1,7 +1,6 @@
 #include "algorithms.hpp"
 
-std::pair<std::vector<int>, float> DijkstraEngine::getShortPath(
-    const Graph& graph, const int source, const int target) {
+std::pair<std::vector<int>, float> DijkstraEngine::getShortPath(const Graph& graph, const int source, const int target) {
   currentToken++;  // Increment the global token.
 
   pq = std::priority_queue<Pii, std::vector<Pii>, std::greater<Pii>>();
@@ -10,8 +9,8 @@ std::pair<std::vector<int>, float> DijkstraEngine::getShortPath(
   parent[source] = {-1, -1};
   pq.push({0.0f, source});
 
-  const auto& ptrs = graph.getPtrs();
-  const auto& edges = graph.getEdges();
+  const auto& ptrs = graph.ptrs;
+  const auto& edges = graph.edges;
 
   bool found = false;
 
@@ -32,7 +31,6 @@ std::pair<std::vector<int>, float> DijkstraEngine::getShortPath(
     for (int i = ptrs[u]; i < ptrs[u + 1]; ++i) {
       const auto& edge = edges[i];
 
-      if (!edge.active) continue;
 
       int v = edge.target;
       float newDist = d + edge.weight;
@@ -53,9 +51,7 @@ std::pair<std::vector<int>, float> DijkstraEngine::getShortPath(
   if (!found) return {{}, -1.0f};
 
   std::vector<int> path;
-  path.reserve(nNodes /
-               10);  // Reserve estimated size to avoid reallocations (maybe
-                     // happen, mas its will be lass than reserve all)
+  path.reserve(nNodes / 10);  // Reserve estimated size to avoid reallocations
 
   int curr = target;
   while (curr != source && curr != -1) {

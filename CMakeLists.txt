@@ -4,25 +4,18 @@ project(SteinerForestSolver)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True) 
 
-# --- Seleção Manual de Arquivos ---
-# Listamos apenas os arquivos .cpp necessários para o build.
-# Note: .h e .hpp não precisam estar aqui para compilar, 
-# mas incluí-los ajuda algumas IDEs a mostrá-los no projeto.
 set(SOURCES
     "main.cpp"
     
     # Algorithms
     "algorithms/dijkstra.cpp"
-    
+    "tests/dsu.cpp"    
     "tests/graph.cpp"
     "tests/dijkstra.cpp"
 )
 
-# Criar o executável apenas com os arquivos selecionados
 add_executable(steiner_forest ${SOURCES})
 
-# --- Configuração de Cabeçalhos ---
-# O CMake precisa saber onde procurar os arquivos .h e .hpp
 target_include_directories(steiner_forest PRIVATE
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/utils

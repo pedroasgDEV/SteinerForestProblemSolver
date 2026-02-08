@@ -24,7 +24,7 @@ bool verifyPath(const Graph& g, const std::vector<int>& pathEdges,
   // Iterate through edge indices returned by Dijkstra
   for (size_t i = 0; i < temp.size(); ++i) {
     int edgeIdx = temp[i];
-    const auto& edge = g.getEdges()[edgeIdx];  // Get the actual edge from graph
+    const auto& edge = g.edges[edgeIdx];  // Get the actual edge from graph
 
     if (edge.source != expectedSource)
       return false;  // Verify if edge starts where the previous one ended
@@ -47,7 +47,7 @@ void dijkstraTests() {
   std::cout << "[Dijkstra] Simple path check... ";
 
   // Graph: 0-1 (10), 1-2 (10)
-  Graph g1({{0, 1, 10.0f}, {1, 2, 10.0f}}, 3, true);
+  Graph g1({{0, 1, 10.0f}, {1, 2, 10.0f}}, 3);
 
   // Setup Engine for 3 nodes
   DijkstraEngine engine1(3);
@@ -61,7 +61,7 @@ void dijkstraTests() {
   std::cout << "[Dijkstra] Shortcut check... ";
 
   // 0-1 (10), 1-2 (10), 0-2 (5)
-  Graph g2({{0, 1, 10.0f}, {1, 2, 10.0f}, {0, 2, 5.0f}}, 3, true);
+  Graph g2({{0, 1, 10.0f}, {1, 2, 10.0f}, {0, 2, 5.0f}}, 3);
 
   DijkstraEngine engine2(3);
   auto res2 = engine2.getShortPath(g2, 0, 2);
@@ -75,7 +75,7 @@ void dijkstraTests() {
   std::cout << "[Dijkstra] Unreachable check... ";
 
   // Graph: Disconnected components {0, 1} and {2, 3}
-  Graph g3({{0, 1, 5.0f}, {2, 3, 5.0f}}, 4, true);
+  Graph g3({{0, 1, 5.0f}, {2, 3, 5.0f}}, 4);
 
   DijkstraEngine engine3(4);
   auto res3 = engine3.getShortPath(g3, 0, 3);
@@ -100,7 +100,7 @@ void dijkstraTests() {
           {0, 3, 50.0f},
           {3, 2, 50.0f}  // Expensive path
       },
-      4, true);
+      4);
 
   DijkstraEngine engine4(4);
   auto run1 = engine4.getShortPath(g4, 0, 2);
@@ -110,11 +110,17 @@ void dijkstraTests() {
   assert(run1.second == 20.0f);
 
   // Block the cheap path (remove edge 0-1)
-  g4.setEdgeStatus(g4.getEdge(0, 1), false);
-  auto run2 = engine4.getShortPath(g4, 0, 2);
+  Graph g5(
+      {
+          {1, 2, 10.0f},  // Cheap path
+          {0, 3, 50.0f},
+          {3, 2, 50.0f}  // Expensive path
+      },
+      4);
+  auto run2 = engine4.getShortPath(g5, 0, 2);
 
   // Should take expensive path (0-3-2)
-  assert(verifyPath(g4, run2.first, {0, 3, 2}));
+  assert(verifyPath(g5, run2.first, {0, 3, 2}));
   assert(run2.second == 100.0f);
 
   std::cout << "Passed." << std::endl;

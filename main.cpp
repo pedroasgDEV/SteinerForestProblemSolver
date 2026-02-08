@@ -5,8 +5,9 @@
 #include "tests/tests.hpp"
 #include "utils/CLI11.hpp"
 // #include "utils/report_generator.hpp"
-#include "algorithms/algorithms.hpp"
-#include "utils/Graph.hpp"
+// #include "algorithms/algorithms.hpp"
+// #include "utils/Graph.hpp"
+// #include "utils/DSU.hpp"
 // #include "models/SFP.hpp"
 
 // ==========================================
@@ -80,13 +81,15 @@ void getFilesInDirectory(const std::string& dirPath,
 
     bool flag_test_all = false;
     bool flag_test_graph = false;
+    bool flag_test_DSU = false;
     bool flag_test_dijkstra = false;
     bool flag_test_SFP = false;
     bool flag_test_GRASPcons = false;
 
     app.add_flag("--test", flag_test_all, "Runs all available tests");
     app.add_flag("--test-graph", flag_test_graph,
-                 "Runs only the Graph class tests");
+                 "Runs only the Graph struct tests");
+    app.add_flag("--test-DSU", flag_test_DSU, "Runs only the DSU struct tests");
     app.add_flag("--test-dijkstra", flag_test_dijkstra,
                  "Runs only the Dijkstra algorithm tests");
     app.add_flag("--test-SFP", flag_test_SFP,
@@ -119,12 +122,14 @@ void getFilesInDirectory(const std::string& dirPath,
       if (flag_test_all) {
         graphTests();
         dijkstraTests();
+        dsuTests();
         // steinerForestTests();
         // GRASPconstructiveTests();
         return 0;
       }
       if (flag_test_graph) graphTests();
       if (flag_test_dijkstra) dijkstraTests();
+      if (flag_test_DSU) dsuTests();
       // if (flag_test_SFP) steinerForestTests();
       // if (flag_test_GRASPcons) GRASPconstructiveTests();
       return 0;
