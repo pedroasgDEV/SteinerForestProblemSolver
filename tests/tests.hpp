@@ -1,9 +1,11 @@
 #ifndef TESTS_HPP
 #define TESTS_HPP
 
-#include "../algorithms/algorithms.hpp"
+#include <cassert>
+
 #include "../models/SFP.hpp"
 #include "../utils/DSU.hpp"
+#include "../utils/Dijkstra.hpp"
 #include "../utils/Graph.hpp"
 
 void graphTests();

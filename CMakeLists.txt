@@ -7,9 +7,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(SOURCES
     "main.cpp"
     
-    # Algorithms
-    "algorithms/dijkstra.cpp"
-
     "models/problem.cpp"
     "models/solution.cpp"
     "models/neighbourhood.cpp"

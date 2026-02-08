@@ -1,10 +1,6 @@
-#include <algorithm>
-#include <memory>
 #include <random>
-#include <tuple>
-#include <vector>
 
-#include "../algorithms/algorithms.hpp"
+#include "../utils/Dijkstra.hpp"
 #include "SFP.hpp"
 
 SFPProblem::SFPProblem(std::shared_ptr<Graph> g,
@@ -101,18 +97,17 @@ std::istream& operator>>(std::istream& in, SFPProblem& sf) {
         edgeList.push_back({source - 1, target - 1, weight});
       }
     }
-    
+
     else if (readingTerminals) {
       if (token == "Terminals") {
-          int nTerminals;
-          in >> nTerminals;
-          sf.terminals.reserve(nTerminals);
-       } 
-      else if (token == "TP") {
-          int source, target;
-          in >> source >> target;
-          sf.terminals.push_back({source - 1, target - 1});
-       }
+        int nTerminals;
+        in >> nTerminals;
+        sf.terminals.reserve(nTerminals);
+      } else if (token == "TP") {
+        int source, target;
+        in >> source >> target;
+        sf.terminals.push_back({source - 1, target - 1});
+      }
     }
   }
 

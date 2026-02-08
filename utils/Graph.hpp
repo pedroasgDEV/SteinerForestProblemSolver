@@ -1,11 +1,11 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
+#include <algorithm>
 #include <ostream>
+#include <queue>
 #include <stdexcept>
 #include <vector>
-#include <algorithm>
-#include <queue>
 
 /**
  * @struct Edge
@@ -16,7 +16,8 @@
 struct Edge {
   int source;          ///< ID of the source node
   int target;          ///< ID of the target node
-  int reverseEdgePtr;  ///< Index of the reverse edge. -1 if is not alocated yet.
+  int reverseEdgePtr;  ///< Index of the reverse edge. -1 if is not alocated
+                       ///< yet.
   float weight;        ///< The weight of this edge
 };
 
@@ -25,11 +26,11 @@ struct Edge {
  * @brief Struct defining a graph to SFP using CSR (Compressed Sparse Row).
  */
 struct Graph {
-  std::vector<int> ptrs;    ///< CSR row pointers.
-  std::vector<Edge> edges;  ///< Contiguous array containing all graph edges.
-  const float totalWeight;  ///< The sum of all weight of this graph
-  const int nNodes, nEdges; ///< the number of nodes and edges of this graph
-  
+  std::vector<int> ptrs;     ///< CSR row pointers.
+  std::vector<Edge> edges;   ///< Contiguous array containing all graph edges.
+  const float totalWeight;   ///< The sum of all weight of this graph
+  const int nNodes, nEdges;  ///< the number of nodes and edges of this graph
+
   /**
    * @brief Construtor Raw Data -> CSR.
    * @param nNodes Number of nodes.
@@ -37,17 +38,17 @@ struct Graph {
    */
   Graph(const std::vector<std::tuple<int, int, float>>& edgeList,
         const int nNodes)
-      : totalWeight(0.0f),
-        nNodes(nNodes),
-        nEdges(edgeList.size() * 2)
-    {
+      : totalWeight(0.0f), nNodes(nNodes), nEdges(edgeList.size() * 2) {
     if (nNodes <= 0)
       throw std::runtime_error("ERROR: Number of nodes must be positive.");
     if (edgeList.empty())
       throw std::runtime_error("ERROR: edgeList cannot be empty");
 
     // Temporary Adjacency List
-    struct TempEdge { int target; float weight; };
+    struct TempEdge {
+      int target;
+      float weight;
+    };
     std::vector<std::vector<TempEdge>> adj(nNodes);
 
     double tempTotalWeight = 0;
@@ -72,10 +73,13 @@ struct Graph {
 
     for (int i = 0; i < nNodes; i++) {
       // Sorting makes finding reverse edges deterministic and faster
-      std::sort(adj[i].begin(), adj[i].end(), 
-        [](const TempEdge& a, const TempEdge& b){ return a.target < b.target; });
+      std::sort(adj[i].begin(), adj[i].end(),
+                [](const TempEdge& a, const TempEdge& b) {
+                  return a.target < b.target;
+                });
       // Initialize reverseEdgePtr to -1
-      for (const auto& edge : adj[i]) edges.push_back({i, edge.target, -1, edge.weight});
+      for (const auto& edge : adj[i])
+        edges.push_back({i, edge.target, -1, edge.weight});
       ptrs.push_back(edges.size());
     }
 
@@ -88,14 +92,15 @@ struct Graph {
       int target = edges[i].target;
 
       // Find the index of edge v -> u
-      for (int j = ptrs[target]; j < ptrs[target+1]; ++j)
-          if (edges[j].target == source) {
-              // Link them both ways
-              // const_cast needed because we are initializing 'const' members in body
-              const_cast<int&>(edges[i].reverseEdgePtr) = j;
-              const_cast<int&>(edges[j].reverseEdgePtr) = i;
-              break;
-          }
+      for (int j = ptrs[target]; j < ptrs[target + 1]; ++j)
+        if (edges[j].target == source) {
+          // Link them both ways
+          // const_cast needed because we are initializing 'const' members in
+          // body
+          const_cast<int&>(edges[i].reverseEdgePtr) = j;
+          const_cast<int&>(edges[j].reverseEdgePtr) = i;
+          break;
+        }
       const_cast<float&>(totalWeight) = static_cast<float>(tempTotalWeight);
     }
   }
@@ -104,7 +109,6 @@ struct Graph {
   Graph(const Graph&) = delete;
   Graph& operator=(const Graph&) = delete;
 
-
   /**
    * @brief Overloads the << operator to print the graph.
    * @param out The output stream.
@@ -112,20 +116,26 @@ struct Graph {
    * @return The output stream.
    */
   friend std::ostream& operator<<(std::ostream& out, const Graph& g) {
-    out << std::endl << "-------------------------------------------------------------------" << std::endl;
-    out << "## Graph implemented as Contiguous Adjacency Lists and CSR" << std::endl;
+    out << std::endl
+        << "-------------------------------------------------------------------"
+        << std::endl;
+    out << "## Graph implemented as Contiguous Adjacency Lists and CSR"
+        << std::endl;
     out << "Total Weight: " << g.totalWeight << std::endl;
 
     out << std::endl << "### Edges of eatch Node" << std::endl;
     for (int crnt_node = 0; crnt_node < g.nNodes; crnt_node++) {
       out << "Node " << crnt_node << " ->";
 
-      for (int crnt_edge = g.ptrs[crnt_node]; crnt_edge < g.ptrs[crnt_node + 1]; crnt_edge++)
-        out << " {" << "Target " << g.edges[crnt_edge].target << ", Weight " << g.edges[crnt_edge].weight << "}";
+      for (int crnt_edge = g.ptrs[crnt_node]; crnt_edge < g.ptrs[crnt_node + 1];
+           crnt_edge++)
+        out << " {" << "Target " << g.edges[crnt_edge].target << ", Weight "
+            << g.edges[crnt_edge].weight << "}";
 
       out << ";" << std::endl;
     }
-    out << "-------------------------------------------------------------------"<< std::endl;
+    out << "-------------------------------------------------------------------"
+        << std::endl;
 
     return out;
   }

@@ -1,7 +1,3 @@
-#include <cassert>
-#include <iostream>
-#include <vector>
-
 #include "tests.hpp"
 
 /**

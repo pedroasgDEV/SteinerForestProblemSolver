@@ -1,10 +1,3 @@
-#include <algorithm>
-#include <cassert>
-#include <iostream>
-#include <ostream>
-#include <utility>
-#include <vector>
-
 #include "tests.hpp"
 
 // Helper function to verify if the list of EDGE INDICES corresponds to the
