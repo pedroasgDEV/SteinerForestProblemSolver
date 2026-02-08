@@ -4,7 +4,7 @@
  * @brief Tests basic construction and initial state of the DSU.
  */
 static void testConstructionAndBasics() {
-  std::cout << "[Test] Construction and Basics..." << std::endl;
+  std::cout << "[Test] Construction and Basics...";
 
   int nNodes = 10;
   DSU dsu(nNodes);
@@ -26,7 +26,7 @@ static void testConstructionAndBasics() {
  * @brief Tests the unite and find operations, including connectivity checks.
  */
 static void testUnionAndFind() {
-  std::cout << "[Test] Union and Find Operations..." << std::endl;
+  std::cout << "[Test] Union and Find Operations...";
 
   DSU dsu(5);  // Nodes 0, 1, 2, 3, 4
 
@@ -64,7 +64,7 @@ static void testUnionAndFind() {
  * Logic: Construct a tall tree (line) and check if find() flattens it.
  */
 static void testPathCompression() {
-  std::cout << "[Test] Path Compression Logic..." << std::endl;
+  std::cout << "[Test] Path Compression Logic...";
 
   int n = 5;
   DSU dsu(n);
@@ -98,7 +98,7 @@ static void testPathCompression() {
  * @brief Tests the reset functionality (crucial for ROAR-NET performance).
  */
 static void testReset() {
-  std::cout << "[Test] Reset Functionality..." << std::endl;
+  std::cout << "[Test] Reset Functionality...";
 
   DSU dsu(5);
 
@@ -129,7 +129,7 @@ static void testReset() {
  * Ensures the smaller tree is attached to the larger tree root.
  */
 static void testUnionByRank() {
-  std::cout << "[Test] Union By Rank..." << std::endl;
+  std::cout << "[Test] Union By Rank...";
 
   DSU dsu(4);
 

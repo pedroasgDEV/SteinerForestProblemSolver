@@ -15,7 +15,7 @@ int findEdgeIndex(const Graph& g, int u, int v) {
  * @brief Test 1: Basic Problem Construction and Empty Solution
  */
 void testBasicConstruction() {
-  std::cout << "[Test] Basic Construction..." << std::endl;
+  std::cout << "[Test] Basic Construction...";
 
   // Create a Triangle Graph: 0-1 (10), 1-2 (10), 2-0 (10)
   std::vector<std::tuple<int, int, float>> edgeList = {
@@ -51,7 +51,7 @@ void testBasicConstruction() {
  * @brief Test 2: Move Mechanics (Apply/Undo and Cost Consistency)
  */
 void testMovesAndCost() {
-  std::cout << "[Test] Move Mechanics (Apply/Undo)..." << std::endl;
+  std::cout << "[Test] Move Mechanics (Apply/Undo)...";
 
   // Line Graph: 0 --(10)--> 1 --(20)--> 2
   std::vector<std::tuple<int, int, float>> edgeList = {{0, 1, 10.0f},
@@ -95,7 +95,7 @@ void testMovesAndCost() {
  * @brief Test 3: Feasibility Logic with DSU
  */
 void testFeasibility() {
-  std::cout << "[Test] Feasibility Logic..." << std::endl;
+  std::cout << "[Test] Feasibility Logic...";
 
   // Path: 0 -> 1 -> 2. Terminals: (0, 2)
   std::vector<std::tuple<int, int, float>> edgeList = {{0, 1, 5.0f},
@@ -127,7 +127,7 @@ void testFeasibility() {
  * @brief Test 4: Random Constructive Heuristic
  */
 void testRandomSolution() {
-  std::cout << "[Test] Random Solution Heuristic..." << std::endl;
+  std::cout << "[Test] Random Solution Heuristic...";
 
   // Square Graph 0-1-2-3-0. All weights 1. Terminals (0, 2).
   // Optimal path is length 2 (0-1-2 or 0-3-2).
@@ -155,7 +155,7 @@ void testRandomSolution() {
  * @brief Test 5: Neighborhood Generation (Add/Remove)
  */
 void testNeighborhoods() {
-  std::cout << "[Test] Neighborhood Generation..." << std::endl;
+  std::cout << "[Test] Neighborhood Generation...";
 
   // Graph 0-1 (10). One edge.
   std::vector<std::tuple<int, int, float>> edgeList = {{0, 1, 10.0f}};
@@ -240,8 +240,6 @@ void testIOParsing() {
   DSU dsu(problem.getNNodes());
   assert(sol.isFeasible(dsu) == true);
   assert(sol.getObjectiveValue() > 0);
-
-  std::cout << "-> Passed." << std::endl;
 }
 
 void steinerForestTests() {

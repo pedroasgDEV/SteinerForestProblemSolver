@@ -49,7 +49,7 @@ void dijkstraTests() {
   // Expect: 0 -> 1 -> 2
   assert(verifyPath(g1, res1.first, {0, 1, 2}));
   assert(res1.second == 20.0f);
-  std::cout << "Passed." << std::endl;
+  std::cout << "-> Passed." << std::endl;
 
   std::cout << "[Dijkstra] Shortcut check... ";
 
@@ -63,7 +63,7 @@ void dijkstraTests() {
   assert(verifyPath(g2, res2.first, {0, 2}));
   assert(res2.second == 5.0f);
 
-  std::cout << "Passed." << std::endl;
+  std::cout << "-> Passed." << std::endl;
 
   std::cout << "[Dijkstra] Unreachable check... ";
 
@@ -79,7 +79,7 @@ void dijkstraTests() {
   // unreachable
   assert(res3.second == -1.0f);
 
-  std::cout << "Passed." << std::endl;
+  std::cout << "-> Passed." << std::endl;
 
   std::cout << "[Dijkstra] Dynamic Obstacle (Soft Deletion)... ";
 
@@ -116,7 +116,7 @@ void dijkstraTests() {
   assert(verifyPath(g5, run2.first, {0, 3, 2}));
   assert(run2.second == 100.0f);
 
-  std::cout << "Passed." << std::endl;
+  std::cout << "-> Passed." << std::endl;
 
   std::cout << "========================================" << std::endl;
   std::cout << "      ALL TESTS PASSED SUCCESSFULLY     " << std::endl;

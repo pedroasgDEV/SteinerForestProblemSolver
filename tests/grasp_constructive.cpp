@@ -28,7 +28,7 @@ void testDisjointPaths() {
 
   // Solver with Alpha 0 = Greedy
   GRASPConstructiveHeuristic solver(0.0f);
-  SFPSolution solution = solver.solve(problem);
+  SFPSolution solution = solver.generate(problem);
 
   // Verify Feasibility (Connectivity)
   DSU dsu(nNodes);
@@ -69,7 +69,7 @@ void testAlphaRandomness() {
   // Solver with Alpha 1.0 = Pure Random
   // (In this simple graph, random choice still picks the only available edges)
   GRASPConstructiveHeuristic solver(1.0f);
-  SFPSolution solution = solver.solve(problem);
+  SFPSolution solution = solver.generate(problem);
 
   // 1. Verify Feasibility
   DSU dsu(nNodes);
@@ -79,7 +79,7 @@ void testAlphaRandomness() {
   // Expected: 10 + 100 = 110
   assert(std::abs(solution.getObjectiveValue() - 110.0f) < 0.001f);
 
-  std::cout << "Passed." << std::endl;
+  std::cout << "-> Passed." << std::endl;
 }
 
 void GRASPconstructiveTests() {
