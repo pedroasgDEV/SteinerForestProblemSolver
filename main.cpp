@@ -4,11 +4,7 @@
 
 #include "tests/tests.hpp"
 #include "utils/CLI11.hpp"
-// #include "utils/report_generator.hpp"
-// #include "algorithms/Solver.hpp"
-// #include "utils/Graph.hpp"
-// #include "utils/DSU.hpp"
-// #include "models/SFP.hpp"
+#include "utils/ReportGenerator.hpp"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -37,6 +33,7 @@ void getFilesInDirectory(const std::string& dirPath,
     } while (::FindNextFile(hFind, &fd));
     ::FindClose(hFind);
   }
+}
 
 #else
 #include <dirent.h>
@@ -72,127 +69,112 @@ void getFilesInDirectory(const std::string& dirPath,
 }
 #endif
 
-  int main(int argc, char** argv) {
-    CLI::App app{"Steiner Forest Problem Solver"};
+int main(int argc, char** argv) {
+  CLI::App app{"Steiner Forest Problem Solver"};
 
-    bool flag_test_all = false;
-    bool flag_test_graph = false;
-    bool flag_test_DSU = false;
-    bool flag_test_dijkstra = false;
-    bool flag_test_SFP = false;
-    bool flag_test_GRASPcons = false;
+  bool flag_test_all = false;
+  bool flag_test_graph = false;
+  bool flag_test_DSU = false;
+  bool flag_test_dijkstra = false;
+  bool flag_test_SFP = false;
+  bool flag_test_cons = false;
+  bool flag_test_lsearch = false;
 
-    app.add_flag("--test", flag_test_all, "Runs all available tests");
-    app.add_flag("--test-graph", flag_test_graph,
-                 "Runs only the Graph struct tests");
-    app.add_flag("--test-DSU", flag_test_DSU, "Runs only the DSU struct tests");
-    app.add_flag("--test-dijkstra", flag_test_dijkstra,
-                 "Runs only the Dijkstra algorithm tests");
-    app.add_flag("--test-SFP", flag_test_SFP,
-                 "Runs only the Steiner Forest Problem implementation tests");
-    app.add_flag("--test-GRASPCONS", flag_test_GRASPcons,
-                 "Runs only GRASP constructive heuristic tests");
+  app.add_flag("--test", flag_test_all, "Runs all available tests");
+  app.add_flag("--test-graph", flag_test_graph,
+               "Runs only the Graph struct tests");
+  app.add_flag("--test-DSU", flag_test_DSU, "Runs only the DSU struct tests");
+  app.add_flag("--test-dijkstra", flag_test_dijkstra,
+               "Runs only the Dijkstra algorithm tests");
+  app.add_flag("--test-sfp", flag_test_SFP,
+               "Runs only the Steiner Forest Problem implementation tests");
+  app.add_flag("--test-cons", flag_test_cons,
+               "Runs only GRASP constructive heuristic tests");
+  app.add_flag("--test-lsrch", flag_test_lsearch,
+               "Runs only GRASP Local Searh tests");
 
-    std::string input_file;
-    std::string input_dir;
-    float alpha = 1.0f;
-    bool alpha_variation = false;
+  std::string input_file;
+  std::string input_dir;
+  float alpha = 1.0f;
+  bool alpha_variation = false;
 
-    app.add_option("-f,--file", input_file,
-                   "Path to a single .stp file to solve")
-        ->check(CLI::ExistingFile);
-    app.add_option("-d,--directory", input_dir,
-                   "Path to a directory containing .stp files (Without the "
-                   "\"\\\" or \"/\" at the end)")
-        ->check(CLI::ExistingDirectory);
-    app.add_option("-a,--alpha", alpha,
-                   "Alpha parameter for constructive heuristic")
-        ->check(CLI::Range(0.0, 1.0));
-    app.add_flag("-v,--variation", alpha_variation,
-                 "Test alphas [0.0, 0.1 ... 1.0] and pick best");
+  app.add_option("-f,--file", input_file, "Path to a single .stp file to solve")
+      ->check(CLI::ExistingFile);
+  app.add_option("-d,--directory", input_dir,
+                 "Path to a directory containing .stp files (Without the "
+                 "\"\\\" or \"/\" at the end)")
+      ->check(CLI::ExistingDirectory);
+  app.add_option("-a,--alpha", alpha,
+                 "Alpha parameter for constructive heuristic")
+      ->check(CLI::Range(0.0, 1.0));
+  app.add_flag("-v,--variation", alpha_variation,
+               "Test alphas [0.0, 0.1 ... 1.0] and pick best");
 
-    CLI11_PARSE(app, argc, argv);
+  CLI11_PARSE(app, argc, argv);
 
-    if (flag_test_all || flag_test_graph || flag_test_dijkstra ||
-        flag_test_SFP || flag_test_GRASPcons) {
-      if (flag_test_all) {
-        graphTests();
-        dijkstraTests();
-        dsuTests();
-        steinerForestTests();
-        GRASPconstructiveTests();
-        return 0;
-      }
-      if (flag_test_graph) graphTests();
-      if (flag_test_dijkstra) dijkstraTests();
-      if (flag_test_DSU) dsuTests();
-      if (flag_test_SFP) steinerForestTests();
-      if (flag_test_GRASPcons) GRASPconstructiveTests();
+  if (flag_test_all || flag_test_graph || flag_test_dijkstra || flag_test_SFP || flag_test_cons || flag_test_DSU || flag_test_lsearch) {
+    if (flag_test_all) {
+      graphTests();
+      dijkstraTests();
+      dsuTests();
+      steinerForestTests();
+      constructiveTests();
+      localSearchTests();
       return 0;
     }
-    /*
-    if (!input_file.empty()) {
-        if (hasExtension(input_file, ".stp")) {
-            FileStats stats;
-
-            if (alpha_variation)
-                stats = findBestAlpha(input_file,
-                                        GRASPconstructiveHeuristic,
-                                        {hasNegativeWeights, isGraphConnected},
-                                        isAllTerminalsPairsConnected);
-            else
-                stats = processFile(input_file,
-                                    GRASPconstructiveHeuristic,
-                                    {hasNegativeWeights, isGraphConnected},
-                                    isAllTerminalsPairsConnected,
-                                    alpha);
-
-            printMarkdownHeader();
-            printFileRow(stats);
-        }
-        else{
-            std::cout << "ERROR: The file" << input_file << " is not \".stp\"";
-        }
-
-    }
-    else if (!input_dir.empty()) {
-        std::vector<std::string> files;
-        std::vector<FileStats> results;
-
-        getFilesInDirectory(input_dir, files);
-
-        if (files.empty()) {
-            std::cout << "No files found in directory." << std::endl;
-            return 0;
-        }
-
-        printMarkdownHeader();
-
-        for (const auto& fullPath : files) {
-            if (hasExtension(fullPath, ".stp")) {
-
-                FileStats stats;
-                if (alpha_variation)
-                    stats = findBestAlpha(fullPath,
-                                            GRASPconstructiveHeuristic,
-                                            {hasNegativeWeights,
-    isGraphConnected}, isAllTerminalsPairsConnected); else stats =
-    processFile(fullPath, GRASPconstructiveHeuristic, {hasNegativeWeights,
-    isGraphConnected}, isAllTerminalsPairsConnected, alpha);
-
-                if (stats.nNodes > 0) {
-                    printFileRow(stats);
-                    results.push_back(stats);
-                }
-            }
-        }
-
-        printSummary(input_dir, results);
-    }
-    else {
-        std::cout << "No input provided. Use --help to see options." <<
-    std::endl;
-    }
-    */
+    if (flag_test_graph) graphTests();
+    if (flag_test_dijkstra) dijkstraTests();
+    if (flag_test_DSU) dsuTests();
+    if (flag_test_SFP) steinerForestTests();
+    if (flag_test_cons) constructiveTests();
+    if (flag_test_lsearch) localSearchTests();
     return 0;
   }
+
+  if (!input_file.empty())
+    if (hasExtension(input_file, ".stp")) {
+      FileStats stats;
+
+      if (alpha_variation)
+        stats = findBestAlpha(input_file);
+      else
+        stats = processFile(input_file, alpha);
+
+      printMarkdownHeader();
+      printFileRow(stats);
+    }
+
+    else
+      std::cout << "ERROR: The file" << input_file << " is not \".stp\"";
+  else if (!input_dir.empty()) {
+    std::vector<std::string> files;
+    std::vector<FileStats> results;
+
+    getFilesInDirectory(input_dir, files);
+
+    if (files.empty()) {
+      std::cout << "No files found in directory." << std::endl;
+      return 0;
+    }
+
+    printMarkdownHeader();
+
+    for (const auto& fullPath : files)
+      if (hasExtension(fullPath, ".stp")) {
+        FileStats stats;
+        if (alpha_variation)
+          stats = findBestAlpha(fullPath);
+        else
+          stats = processFile(fullPath, alpha);
+
+        if (stats.nNodes > 0) {
+          printFileRow(stats);
+          results.push_back(stats);
+        }
+      }
+
+    printSummary(input_dir, results);
+  } else
+    std::cout << "No input provided. Use --help to see options." << std::endl;
+  return 0;
+}

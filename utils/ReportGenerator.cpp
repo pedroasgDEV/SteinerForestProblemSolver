@@ -1,13 +1,10 @@
-
 #include "ReportGenerator.hpp"
 
-#include <cmath>
-#include <fstream>
-#include <iostream>
-#include <limits>
-#include <map>
-#include <string>
-#include <vector>
+std::string getFileName(const std::string& path) {
+  size_t lastSlash = path.find_last_of("/\\");
+  if (lastSlash != std::string::npos) return path.substr(lastSlash + 1);
+  return path;
+}
 
 bool hasExtension(const std::string& str, const std::string& suffix) {
   std::string tmp_str = getFileName(str);
@@ -16,82 +13,72 @@ bool hasExtension(const std::string& str, const std::string& suffix) {
                          suffix) == 0;
 }
 
-std::string getFileName(const std::string& path) {
-  size_t lastSlash = path.find_last_of("/\\");
-  if (lastSlash != std::string::npos) return path.substr(lastSlash + 1);
-  return path;
-}
-
-FileStats processFile(const std::string& filepath, const SolveMethodFunc alg,
-                      const std::vector<ConstraintFunc>& cstrs,
-                      const ValidatorFunc verify, const float alpha) {
-  SteinerForest sf;
+FileStats processFile(const std::string& filepath, const float alpha) {
+  SFPProblem sfp;
 
   std::ifstream file(filepath);
   if (!file.is_open()) {
     std::cerr << "Error opening file: " << filepath << std::endl;
-    return {"", 0, 0, 0, 0, 0, alpha};
+    return {"", 0, 0, 0, 0, 0, 0, 0, alpha};
   }
 
-  if (!(file >> sf)) {
-    std::cerr << "Error parsing file: " << filepath << std::endl;
-    return {"", 0, 0, 0, 0, 0, alpha};
+  try { file >> sfp; } 
+  catch (const std::exception& e) {
+    std::cerr << "Error parsing file: " << filepath << e.what() << std::endl;
+    return {"", 0, 0, 0, 0, 0, 0, 0, alpha};
   }
 
-  double timeMs = 0;
-  try {
-    timeMs = sf.solve(alg, cstrs, verify, alpha);
-  } catch (const std::exception& e) {
-    std::cerr << "Failed to solve " << filepath << ": " << e.what()
-              << std::endl;
-    return {getFileName(filepath),
-            sf.getOriginal().getNNode(),
-            sf.getTerminals().size(),
-            0,
-            sf.getOriginal().getTotalWeight(),
-            0,
-            alpha};
-  }
+  auto start = std::chrono::high_resolution_clock::now();
+
+  GRASPConstructiveHeuristic constructive(alpha);
+  SFPSolution solution = constructive.generate(sfp);
+  float firstCost = solution.getObjectiveValue();
+  GRASPLocalSearch localSearch;
+  localSearch.optimize(solution);
+
+  auto end = std::chrono::high_resolution_clock::now();
+
+  std::chrono::duration<double, std::milli> duration = end - start;
 
   FileStats stats;
   stats.filename = getFileName(filepath);
-  stats.nNodes = sf.getOriginal().getNNode();
-
-  stats.nTerminals = sf.getTerminals().size();
-  stats.solutionCost = sf.getCost();
-  stats.originalCost = sf.getOriginal().getTotalWeight();
-  stats.timeMs = timeMs;
+  stats.nNodes = sfp.getNNodes();
+  stats.nEdges = sfp.getNEdges();
+  stats.nTerminals = sfp.getTerminals().size();
+  stats.originalCost = sfp.getGraphPtr()->totalWeight;
+  stats.solutionCost = solution.getObjectiveValue();
+  stats.deltaCost = stats.solutionCost - firstCost;
+  stats.timeMs = duration.count();
   stats.alphaUsed = alpha;
 
   return stats;
 }
 
-FileStats findBestAlpha(const std::string& filepath, const SolveMethodFunc alg,
-                        const std::vector<ConstraintFunc>& cstrs,
-                        const ValidatorFunc verify) {
+FileStats findBestAlpha(const std::string& filepath) {
   FileStats bestStats;
   bestStats.solutionCost = std::numeric_limits<float>::max();
   bestStats.nNodes = 0;
 
   for (int i = 0; i <= 10; ++i) {
     float currentAlpha = i / 10.0f;
-    FileStats current = processFile(filepath, alg, cstrs, verify, currentAlpha);
+    FileStats current = processFile(filepath, currentAlpha);
     if (current.nNodes == 0 && current.originalCost == 0) return current;
-    if (current.solutionCost < bestStats.solutionCost) {
+    if (current.solutionCost < bestStats.solutionCost)
       bestStats = current;
-    } else if (current.solutionCost == bestStats.solutionCost) {
-      if (current.timeMs < bestStats.timeMs) {
-        bestStats = current;
-      }
-    }
+    else if (current.solutionCost == bestStats.solutionCost)
+      if (current.timeMs < bestStats.timeMs) bestStats = current;
   }
+
   return bestStats;
 }
 
 void printMarkdownHeader() {
-  std::cout << "| File | Nodes | Terms | Ratio | Time (ms) | Best Alpha |"
+  std::cout << "| File | Nodes | Edges | Terms | Ratio | Delta | Time (ms) | "
+               "Best Alpha |"
             << std::endl;
-  std::cout << "| :--- | :---: | :---: | :---: | :---: | :---: |" << std::endl;
+  std::cout
+      << "| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |"
+      << std::endl;
 }
 
 void printFileRow(const FileStats& s) {
@@ -99,18 +86,20 @@ void printFileRow(const FileStats& s) {
 
   std::cout << "| " << std::left << std::setw(20) << s.filename << " | "
             << std::right << std::setw(5) << s.nNodes << " | " << std::setw(5)
-            << s.nTerminals << " | " << std::fixed << std::setprecision(4)
-            << std::setw(7) << ratio << " | " << std::setprecision(2)
-            << std::setw(9) << s.timeMs << " |" << std::setprecision(1)
-            << std::setw(10) << s.alphaUsed << " |" << std::endl;
+            << s.nEdges << " | " << std::setw(5) << s.nTerminals << " | "
+            << std::fixed << std::setprecision(4) << std::setw(7) << ratio
+            << " | " << std::setprecision(2) << std::setw(9) << s.deltaCost
+            << " |" << std::setprecision(2) << std::setw(9) << s.timeMs << " |"
+            << std::setprecision(1) << std::setw(10) << s.alphaUsed << " |"
+            << std::endl;
 }
 
 void printSummary(const std::string& sourceName,
                   const std::vector<FileStats>& stats) {
   if (stats.empty()) return;
 
-  int minNodes = stats[0].nNodes;
-  int maxNodes = stats[0].nNodes;
+  size_t minNodes = stats[0].nNodes;
+  size_t maxNodes = stats[0].nNodes;
   float maxRatio = std::numeric_limits<float>::min();
   float minRatio = std::numeric_limits<float>::max();
 

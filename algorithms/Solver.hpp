@@ -1,9 +1,15 @@
 #ifndef SOLVER_HPP
 #define SOLVER_HPP
 
+#include <algorithm>
+#include <limits>
+#include <map>
+#include <random>
 #include <string>
 
 #include "../models/SFP.hpp"
+#include "../utils/DSU.hpp"
+#include "../utils/Dijkstra.hpp"
 
 /**
  * @class ConstructiveStrategy
@@ -75,8 +81,7 @@ class GRASPConstructiveHeuristic : public ConstructiveStrategy {
    * - 0.0: Pure Greedy (Best path always).
    * - 1.0 [default]: Pure Random (Random path selection).
    */
-  GRASPConstructiveHeuristic(const float alpha = 1.0f)
-      : alpha(alpha) {};
+  GRASPConstructiveHeuristic(const float alpha = 1.0f) : alpha(alpha) {};
 
   /**
    * @brief Generates a solution using the candidate list logic.
@@ -102,15 +107,14 @@ class GRASPLocalSearch : public LocalSearchStrategy {
   GRASPLocalSearch() = default;
 
   /**
-   * @brief Iteratively removes edges and tries to reconnect terminals with lower costs.
+   * @brief Iteratively removes edges and tries to reconnect terminals with
+   * lower costs.
    * @param solution The solution to be refined.
    * @return true if global improvement was achieved.
    */
   bool optimize(SFPSolution& solution) const override;
 
-  std::string getName() const override {
-    return "GRASP Local Search";
-  }
+  std::string getName() const override { return "GRASP Local Search"; }
 };
 
 /**
@@ -131,8 +135,7 @@ class GRASPMetaheuristic : public SolverStrategy {
    * @param c The constructive strategy (e.g., GRASPConstructiveHeuristic).
    * @param ls The local search strategy (e.g., GRASPLocalSearch).
    */
-  GRASPMetaheuristic(int maxIter,
-                     std::unique_ptr<ConstructiveStrategy> c,
+  GRASPMetaheuristic(int maxIter, std::unique_ptr<ConstructiveStrategy> c,
                      std::unique_ptr<LocalSearchStrategy> ls)
       : maxIterations(maxIter),
         constructive(std::move(c)),

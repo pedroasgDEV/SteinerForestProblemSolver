@@ -2,19 +2,23 @@
 
 // SFPMove
 void SFPMove::apply(SFPSolution& sol) const {
-  if (type == MoveType::ADD)
+  if (type == MoveType::ADD) {
     sol.internalAdd(edgeIndex);
-  else
+    sol.currentCost += costDelta;
+  } else {
     sol.internalRemove(edgeIndex);
-  sol.currentCost += costDelta;
+    sol.currentCost -= costDelta; 
+  }
 }
 
 void SFPMove::undo(SFPSolution& sol) const {
-  if (type == MoveType::ADD)
+  if (type == MoveType::ADD) {
     sol.internalRemove(edgeIndex);
-  else
+    sol.currentCost -= costDelta; 
+  } else {
     sol.internalAdd(edgeIndex);
-  sol.currentCost -= costDelta;
+    sol.currentCost += costDelta; 
+  }
 }
 
 // SFPSolution

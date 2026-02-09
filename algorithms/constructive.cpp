@@ -1,10 +1,3 @@
-#include <algorithm>
-#include <limits>
-#include <map>
-#include <random>
-
-#include "../utils/DSU.hpp"
-#include "../utils/Dijkstra.hpp"
 #include "Solver.hpp"
 
 /**
@@ -98,7 +91,8 @@ static std::vector<std::pair<int, int>> generatePairs(
 /**
  * @brief Executes the GRASP Constructive Heuristic.
  */
-SFPSolution GRASPConstructiveHeuristic::generate(const SFPProblem& problem) const {
+SFPSolution GRASPConstructiveHeuristic::generate(
+    const SFPProblem& problem) const {
   SFPSolution solution(problem);
 
   // Create a local copy of the graph (Working Graph) to modify weights

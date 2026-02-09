@@ -1,5 +1,3 @@
-#include <sstream>
-
 #include "tests.hpp"
 
 /**

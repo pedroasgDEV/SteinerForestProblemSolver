@@ -82,7 +82,7 @@ void testAlphaRandomness() {
   std::cout << "-> Passed." << std::endl;
 }
 
-void GRASPconstructiveTests() {
+void constructiveTests() {
   std::cout << std::endl;
   std::cout << "========================================" << std::endl;
   std::cout << "  Running Constructive Heuristic Tests  " << std::endl;
