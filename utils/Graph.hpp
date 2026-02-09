@@ -104,9 +104,16 @@ struct Graph {
       const_cast<float&>(totalWeight) = static_cast<float>(tempTotalWeight);
     }
   }
+  
+  // Deep copy of the Graph
+  Graph(const Graph& other) 
+      : ptrs(other.ptrs),
+        edges(other.edges),
+        totalWeight(other.totalWeight),
+        nNodes(other.nNodes),
+        nEdges(other.nEdges) {}
 
   // Delete Copy/Assignment to prevent accidental expensive copies
-  Graph(const Graph&) = delete;
   Graph& operator=(const Graph&) = delete;
 
   /**

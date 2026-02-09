@@ -6,12 +6,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(SOURCES
     "main.cpp"
+
+    "algorithms/constructive.cpp"
+    "algorithms/localSearch.cpp"
     
     "models/problem.cpp"
     "models/solution.cpp"
     "models/neighbourhood.cpp"
 
+    "utils/ReportGenerator.cpp"
+
     "tests/dsu.cpp"    
+    "tests/constructive.cpp"    
+    "tests/localSearch.cpp"    
     "tests/graph.cpp"
     "tests/dijkstra.cpp"
     "tests/sfp.cpp"

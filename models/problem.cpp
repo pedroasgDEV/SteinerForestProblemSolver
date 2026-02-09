@@ -1,6 +1,3 @@
-#include <random>
-
-#include "../utils/Dijkstra.hpp"
 #include "SFP.hpp"
 
 SFPProblem::SFPProblem(std::shared_ptr<Graph> g,
@@ -115,12 +112,12 @@ std::istream& operator>>(std::istream& in, SFPProblem& sf) {
     try {
       sf.graph = std::make_shared<Graph>(edgeList, nNodes);
 
-      if (hasNegativeWeights(*(sf.graph))) {
+      if (hasNegativeWeights(*sf.graph)) {
         std::cerr << "Error: Graph has negative weights.\n";
         in.setstate(std::ios::failbit);
       }
 
-      if (!isGraphConnected(*(sf.graph))) {
+      if (!isGraphConnected(*sf.graph)) {
         std::cerr << "Error: Graph is disconnected.\n";
         in.setstate(std::ios::failbit);
       }
@@ -135,7 +132,7 @@ std::istream& operator>>(std::istream& in, SFPProblem& sf) {
 
   else
     in.setstate(std::ios::failbit);
-
+  
   return in;
 }
 

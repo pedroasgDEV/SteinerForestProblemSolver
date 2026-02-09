@@ -1,7 +1,7 @@
 #include "tests.hpp"
 
 static void testConstructionAndBasics() {
-  std::cout << "[Test] Construction and Basics..." << std::endl;
+  std::cout << "[Test] Construction and Basics...";
 
   // Graph: 0-1 (10), 1-2 (5)
   auto g = Graph({{0, 1, 10.0f}, {1, 2, 5.0f}}, 3);
@@ -22,7 +22,7 @@ static void testConstructionAndBasics() {
 }
 
 static void testConstraintFunctions() {
-  std::cout << "[Test] Constraint Functions..." << std::endl;
+  std::cout << "[Test] Constraint Functions...";
 
   // Positive Connected Graph: 0-1, 1-2
   auto g = Graph({{0, 1, 10.0f}, {1, 2, 5.0f}}, 3);
@@ -46,7 +46,6 @@ static void testPrint() {
   std::cout << "[Test] Printing (Visual Check)..." << std::endl;
   auto g = Graph({{0, 1, 1.5f}, {1, 2, 2.5f}}, 3);
   std::cout << g << std::endl;
-  std::cout << " -> Passed." << std::endl;
 }
 
 void graphTests() {
