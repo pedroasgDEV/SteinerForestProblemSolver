@@ -12,21 +12,30 @@ This implementation is based on the work presented in the paper:
 -----
 ## Features
 
-* **Graph Representation:** Adjacency matrix implementation optimized for dense operations.
-* **Constructive Heuristic:** Shortest-path based greedy construction with dynamic cost updates.
-* **File Support:** Parsing of standard `.stp` benchmark files.
-* **Batch Processing:** Recursively process entire directories of instances.
-* **Reporting:** Automatic Markdown table generation with solution costs, ratios, and execution times.
-* **Cross-Platform:** Compatible with Linux, Windows, and macOS (C++11 Standard).
+## Overview
+
+The solver employs a two-phase metaheuristic approach:
+1.  **Constructive Phase:** Generates an initial feasible solution using a randomized greedy algorithm controlled by an alpha parameter (Restricted Candidate List).
+2.  **Local Search Phase:** Refines the solution using a "Destroy and Repair" strategy, optimized with a pruning mechanism to remove unnecessary non-terminal leaf nodes.
+
+## Key Features
+
+* **GRASP Metaheuristic:** Implements a robust loop of construction and local search to escape local optima.
+* **Advanced Local Search:**
+    * **Destroy and Repair:** Iteratively removes edges and reconnects broken components using shortest paths (Dijkstra).
+    * **Pruning:** Automatically identifies and removes dead branches (degree-1 non-terminal nodes) to strictly minimize solution cost.
+    * **Efficiency:** Uses Disjoint Set Union (DSU) for fast connectivity queries and an incremental cost update system.
+* **High Performance:** Written in modern C++17 with custom graph data structures and optimized memory management.
+* **Benchmarking Suite:** Includes a report generator that produces Markdown-formatted tables comparing results across different alpha values and datasets.
 
 -----
 ## Project Structure
 
 ```
 .
-├── algorithms/       # Heuristics and other algorithms
-├── models/           # SFP Class (Orchestrator for solving and verifying)
-├── utils/            # Graph data structure, CLI parser, Report generator
+├── algorithms/       # Heuristics
+├── models/           # SFP Classes
+├── utils/            # Graph, DSU, CLI parser, Report generator and Dijkstra
 ├── tests/            # Unit tests for all modules
 ├── data/             # Benchmark instances (.stp files)
 ├── main.cpp          # Entry point (CLI Interface)
@@ -37,8 +46,8 @@ This implementation is based on the work presented in the paper:
 ## Building the Project
 
 Requirements:
-* **CMake** (3.5 or higher)
-* **C++ Compiler** supporting C++11:
+* C++17 compatible compiler (GCC 9+, Clang 10+, MSVC 2019+)
+* Standard C++ libraries (no external dependencies required)
   * **Linux:** GCC (g++)
   * **macOS:** Clang (via Xcode Command Line Tools)
   * **Windows:** MSVC (Visual Studio) or MinGW
@@ -165,17 +174,18 @@ To run the unit test suite to verify the graph structure, algorithms, and logic:
 
 The program outputs results in a Markdown-compatible table format, perfect for documentation logs:
 
-| File | Nodes | Terms | Ratio | Time (ms) | Best Alpha |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| b01.stp | 50 | 5 | 0.4512 | 1.20 | 0.7 |
+| File | Nodes | Edges | Terms | Ratio | Delta | Time (ms) | Best Alpha |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| i080-214.stp |    80 |   700 |     8 |  0.0672 |    -14.00 |     2.81 |       1.0 |
 
   * **File:** `Instance filename.`
   * **Nodes:** `Number of nodes in the graph.`
+  * **Edges:** `Number of edges in the graph.`
   * **Terms:** `Number of terminal pairs.`
-  * **Ratio:** `Solution Cost / Original Graph Total Cost` (Lower is better/sparser).
+  * **Ratio:** `Solution Cost / Original Graph Total Cost` (Lower is bestter/sparser).
+  * **Delta:** `Local Search Solution Cost - Constructive Solution Cost.`
   * **Time:** `Time in milliseconds it took to find the solution.`
   * **Best Alpha:** `The value of alpha that yielded the best solution.`
-  
 -----
 
 ## Third-Party Libraries & Resources
