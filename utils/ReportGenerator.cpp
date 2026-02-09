@@ -22,8 +22,9 @@ FileStats processFile(const std::string& filepath, const float alpha) {
     return {"", 0, 0, 0, 0, 0, 0, 0, alpha};
   }
 
-  try { file >> sfp; } 
-  catch (const std::exception& e) {
+  try {
+    file >> sfp;
+  } catch (const std::exception& e) {
     std::cerr << "Error parsing file: " << filepath << e.what() << std::endl;
     return {"", 0, 0, 0, 0, 0, 0, 0, alpha};
   }
@@ -32,6 +33,7 @@ FileStats processFile(const std::string& filepath, const float alpha) {
 
   GRASPConstructiveHeuristic constructive(alpha);
   SFPSolution solution = constructive.generate(sfp);
+  // SFPSolution solution = sfp.random_solution();
   float firstCost = solution.getObjectiveValue();
   GRASPLocalSearch localSearch;
   localSearch.optimize(solution);
