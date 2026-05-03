@@ -32,6 +32,7 @@ The solver employs a robust multi-phase metaheuristic approach:
 -----
 ## Project Structure
 
+```text
 .
 ├── algorithms/       # Metaheuristics (GRASP, VNS, AM-VNS)
 ├── models/           # SFP Classes
@@ -145,4 +146,3 @@ This project makes use of the following open-source libraries and resources:
 * **[SteinForestProblem Instances](https://github.com/lalehghalami/SteinForestProblem)**: Benchmark datasets used for validating and testing the algorithms.
     * **Reference**: Ghalami, L., & Grosu, D. (2022). "Approximation algorithms for Steiner forest: An experimental study". *Networks*, 79(2), 164-188.
     * **DOI**: [10.1002/net.22046](https://doi.org/10.1002/net.22046)
-```
