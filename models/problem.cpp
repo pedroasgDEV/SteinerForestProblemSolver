@@ -3,49 +3,11 @@
 SFPProblem::SFPProblem(std::shared_ptr<Graph> g,
                        const std::vector<std::pair<int, int>>& terminals)
     : graph(g), terminals(terminals), instanceName("Manual") {
-  if (!g) throw std::runtime_error("Graph pointer cannot be null");
+  if (!g) throw std::runtime_error("\tGraph pointer cannot be null");
   if (hasNegativeWeights(*g))
-    throw std::runtime_error("Graph has negative weights.");
+    throw std::runtime_error("\tGraph has negative weights.");
   if (!isGraphConnected(*g))
-    throw std::runtime_error("Graph is not connected.");
-}
-
-SFPSolution SFPProblem::empty_solution() const { return SFPSolution(*this); }
-
-SFPSolution SFPProblem::random_solution() const {
-  SFPSolution sol(*this);
-  DSU dsu(getNNodes());
-  DijkstraEngine dijkstra(getNNodes());
-
-  // Shuffle the processing order of the terminals.
-  std::vector<std::pair<int, int>> shuffledTerminals = terminals;
-  static std::random_device rd;
-  static std::mt19937 rng(rd());
-  std::shuffle(shuffledTerminals.begin(), shuffledTerminals.end(), rng);
-
-  // Construct the solution
-  for (const auto& pair : shuffledTerminals) {
-    int source = pair.first;
-    int target = pair.second;
-
-    if (!dsu.isConnected(source, target)) {
-      auto result = dijkstra.getShortPath(*graph, source, target);
-      const std::vector<int>& pathEdges = result.first;
-
-      for (int edgeIdx : pathEdges)
-        if (!sol.isEdgeActive(edgeIdx)) {
-          sol.internalAdd(edgeIdx);
-
-          sol.currentCost += graph->edges[edgeIdx].weight;
-
-          // Update DSU
-          const auto& edge = graph->edges[edgeIdx];
-          dsu.unite(edge.source, edge.target);
-        }
-    }
-  }
-
-  return sol;
+    throw std::runtime_error("\tGraph is not connected.");
 }
 
 std::istream& operator>>(std::istream& in, SFPProblem& sf) {
@@ -113,25 +75,22 @@ std::istream& operator>>(std::istream& in, SFPProblem& sf) {
       sf.graph = std::make_shared<Graph>(edgeList, nNodes);
 
       if (hasNegativeWeights(*sf.graph)) {
-        std::cerr << "Error: Graph has negative weights.\n";
-        in.setstate(std::ios::failbit);
+        throw std::runtime_error("\tGraph has negative weights.");
       }
 
       if (!isGraphConnected(*sf.graph)) {
-        std::cerr << "Error: Graph is disconnected.\n";
-        in.setstate(std::ios::failbit);
+        throw std::runtime_error("\tGraph is disconnected.");
       }
 
     }
 
     catch (const std::exception& e) {
-      std::cerr << "Error constructing graph: " << e.what() << std::endl;
-      in.setstate(std::ios::failbit);
+      throw std::runtime_error("\tError constructing graph\n" + std::string(e.what()));
     }
   }
 
   else
-    in.setstate(std::ios::failbit);
+    throw std::runtime_error("\tInvalid or empty STP file structure.");
   
   return in;
 }

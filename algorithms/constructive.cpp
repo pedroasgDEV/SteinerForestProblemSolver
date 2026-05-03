@@ -1,21 +1,5 @@
 #include "Solver.hpp"
-
-/**
- * @brief Internal auxiliary structure to manage the Candidate List (CL).
- */
-struct CandidatePair {
-  int source;
-  int target;
-  float currentPathCost;  ///< Cost calculated on the working graph (dynamic
-                          ///< weights)
-
-  /**
-   * @brief Operator for sorting the CL (Ascending order of cost).
-   */
-  bool operator<(const CandidatePair& other) const {
-    return currentPathCost < other.currentPathCost;
-  }
-};
+#include <utility>
 
 /**
  * @brief Agglutinates terminal sets that share vertices.
@@ -28,7 +12,7 @@ static std::vector<std::vector<int>> preprocessTerminalGroups(
   for (const auto& p : terminals) dsu.unite(p.first, p.second);
 
   // Group vertices by connected component (Root -> List of Nodes)
-  std::map<int, std::vector<int>> groupsMap;
+  std::unordered_map<int, std::vector<int>> groupsMap;
   std::vector<bool> isTerminal(nNodes, false);
 
   for (const auto& p : terminals) {
@@ -56,11 +40,10 @@ static std::vector<std::vector<int>> preprocessTerminalGroups(
  * @brief Generate Pairs (T)
  * Randomly pairs up terminals within each group until one remains.
  */
-static std::vector<std::pair<int, int>> generatePairs(
-    const std::vector<std::vector<int>>& terminalGroups) {
-  std::vector<std::pair<int, int>> pairs;
-  static std::random_device rd;
-  static std::mt19937 rng(rd());
+static std::vector<SolutionPair> generatePairs(
+    const std::vector<std::vector<int>>& terminalGroups, const int nTerm, std::mt19937& rng) {
+  
+  std::vector<SolutionPair> pairs;
 
   for (const auto& groupConst : terminalGroups) {
     std::vector<int> group = groupConst;
@@ -81,7 +64,7 @@ static std::vector<std::pair<int, int>> generatePairs(
       int idxDest = distDest(rng);
       int dest = group[idxDest];
 
-      pairs.push_back({pivot, dest});
+      pairs.push_back({pivot, dest, nTerm});
     }
   }
 
@@ -89,41 +72,46 @@ static std::vector<std::pair<int, int>> generatePairs(
 }
 
 /**
+ * @struct Candidate
+ * @brief Represents an element in the Candidate List (CL)
+ */
+struct Candidate {
+  int pair_id;
+  double cost;
+  std::vector<int> path;
+
+  Candidate(const int pair_id) : pair_id(pair_id), cost(0.0) {}
+
+  bool operator<(const Candidate& other) const { return cost < other.cost; }
+};
+
+/**
  * @brief Executes the GRASP Constructive Heuristic.
  */
-SFPSolution GRASPConstructiveHeuristic::generate(
-    const SFPProblem& problem) const {
-  SFPSolution solution(problem);
+SFPSolution GRASPConstructiveHeuristic::generate(const SFPProblem* problem, std::mt19937& rng) {
 
-  // Create a local copy of the graph (Working Graph) to modify weights
-  // dynamically.
-  Graph workingGraph = *problem.getGraphPtr();
-
-  // Instantiate DijkstraEngine (Optimized reuse)
-  DijkstraEngine dijkstra(problem.getNNodes());
-
+  if(!dijkstra) dijkstra = std::make_shared<DijkstraEngine>(problem->getGraphPtr());
+    
   // Generate Pairs
-  auto groups =
-      preprocessTerminalGroups(problem.getNNodes(), problem.getTerminals());
-  auto rawPairs = generatePairs(groups);
+  auto groups = preprocessTerminalGroups(problem->getNNodes(), problem->getTerminals());
+  auto rawPairs = generatePairs(groups, problem->getTerminals().size(), rng);
 
-  // Initialize Candidate List
-  std::vector<CandidatePair> CL;
-  CL.reserve(rawPairs.size());
-  for (const auto& pair : rawPairs)
-    CL.push_back({pair.first, pair.second, std::numeric_limits<float>::max()});
+  std::vector<SolutionPair> dictPairs = rawPairs;
+  SFPSolution solution(problem, std::move(rawPairs));
 
-  static std::random_device rd;
-  static std::mt19937 rng(rd());
+  // Initialize Candidate List (CL)
+  std::vector<Candidate> CL; CL.reserve(dictPairs.size());
 
-  // While |CL| >= 1
+  for (int i = 0; i < static_cast<int>(dictPairs.size()); ++i) {
+    Candidate cand(i);
+    auto result = dijkstra->getShortPath(dictPairs[i].source, dictPairs[i].target, solution.getBitmask());
+    cand.path = std::move(result.first);
+    cand.cost = result.second;
+    CL.push_back(std::move(cand));
+  }
+
+  // While |CL| > 0
   while (!CL.empty()) {
-    // Update costs in CL using Dijkstra on the workingGraph
-    for (auto& cand : CL) {
-      auto result =
-          dijkstra.getShortPath(workingGraph, cand.source, cand.target);
-      cand.currentPathCost = result.second;
-    }
 
     // CL <- Sort(CL)
     std::sort(CL.begin(), CL.end());
@@ -131,37 +119,24 @@ SFPSolution GRASPConstructiveHeuristic::generate(
     // RCL <- CL * alpha
     int rclSize = std::max(1, static_cast<int>(CL.size() * alpha));
 
-    // Select random pair P from RCL
+    // Select random candidate from RCL
     std::uniform_int_distribution<int> distRCL(0, rclSize - 1);
     int selectedIdx = distRCL(rng);
-    CandidatePair pair = CL[selectedIdx];
 
-    // Connect Using Dijkstra
-    auto result = dijkstra.getShortPath(workingGraph, pair.source, pair.target);
-    const std::vector<int>& pathEdges = result.first;
+    // Apply the connection using our safe ConnectPairMove
+    SFPMove move(&solution, MoveType::CNCT_PAIR, CL[selectedIdx].pair_id, std::move(CL[selectedIdx].path));
+    move.apply();
 
-    // Add path to solution and Zero costs
-    const auto& originalEdges = problem.getGraphPtr()->edges;
+    // CL <- CL - {P} (O(1) removal technique)
+    CL[selectedIdx] = std::move(CL.back());
+    CL.pop_back();
 
-    for (int edgeIdx : pathEdges) {
-      // Update Solution using SFPMove
-      if (!solution.isEdgeActive(edgeIdx)) {
-        float originalWeight = originalEdges[edgeIdx].weight;
-        SFPMove move(MoveType::ADD, edgeIdx, originalWeight);
-        move.apply(solution);
-      }
-
-      // Zero the cost in the Working Graph
-      // This encourages edge reuse for subsequent pairs
-      workingGraph.edges[edgeIdx].weight = 0.0f;
-
-      // Maintain bidirectional consistency
-      int revIdx = workingGraph.edges[edgeIdx].reverseEdgePtr;
-      if (revIdx != -1) workingGraph.edges[revIdx].weight = 0.0f;
+    // Update costs and paths in CL using Dijkstra
+    for (auto& cand : CL) {
+      auto result = dijkstra->getShortPath(dictPairs[cand.pair_id].source, dictPairs[cand.pair_id].target, solution.getBitmask());
+      cand.path = std::move(result.first);
+      cand.cost = result.second;
     }
-
-    // CL <- CL - {P}
-    CL.erase(CL.begin() + selectedIdx);
   }
 
   return solution;

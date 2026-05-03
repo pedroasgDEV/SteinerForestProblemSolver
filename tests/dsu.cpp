@@ -1,4 +1,4 @@
-#include "tests.hpp"
+#include "Tests.hpp"
 
 /**
  * @brief Tests basic construction and initial state of the DSU.

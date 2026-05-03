@@ -1,11 +1,14 @@
 #ifndef SOLVER_HPP
 #define SOLVER_HPP
 
-#include <algorithm>
+#include <cstdint>
 #include <limits>
+#include <vector>
+#include <algorithm>
 #include <map>
 #include <random>
-#include <string>
+#include <unordered_map>
+#include <type_traits>
 
 #include "../models/SFP.hpp"
 #include "../utils/DSU.hpp"
@@ -18,14 +21,7 @@
 class ConstructiveStrategy {
  public:
   virtual ~ConstructiveStrategy() = default;
-
-  /**
-   * @brief Generates a new solution for the given problem.
-   * @param problem The static problem definition.
-   * @return SFPSolution A new (potentially feasible) solution.
-   */
-  virtual SFPSolution generate(const SFPProblem& problem) const = 0;
-
+  virtual SFPSolution generate(const SFPProblem* problem, std::mt19937& rng) = 0;
   virtual std::string getName() const = 0;
 };
 
@@ -36,116 +32,149 @@ class ConstructiveStrategy {
 class LocalSearchStrategy {
  public:
   virtual ~LocalSearchStrategy() = default;
-
-  /**
-   * @brief Tries to improve the given solution in-place.
-   * @param solution The solution to be optimized. Modified by reference.
-   * @return true If the solution was improved.
-   * @return false If no improvement was found (local optimum reached).
-   */
-  virtual bool optimize(SFPSolution& solution) const = 0;
-
+  virtual bool optimize(SFPSolution* solution, std::mt19937& rng) = 0;
   virtual std::string getName() const = 0;
 };
 
 /**
  * @class SolverStrategy
- * @brief Main Interface for complete solvers (Facade/Runner).
+ * @brief Main Interface for complete solvers (Orchestrators).
  */
 class SolverStrategy {
  public:
   virtual ~SolverStrategy() = default;
-
-  /**
-   * @brief Solves the SFP instance completely.
-   * @param problem The problem to solve.
-   * @return SFPSolution The best solution found.
-   */
-  virtual SFPSolution solve(const SFPProblem& problem) const = 0;
-
+  virtual SFPSolution solve() const = 0;
+  virtual double getFirstCost() const = 0;
   virtual std::string getName() const = 0;
 };
 
 /**
  * @class GRASPConstructiveHeuristic
- * @brief Implements a Randomized Greedy Constructive Heuristic (RCL based).
  */
 class GRASPConstructiveHeuristic : public ConstructiveStrategy {
  private:
-  float alpha;  ///< Restricted Candidate List (RCL) parameter [0.0, 1.0].
+  float alpha;
+  mutable std::shared_ptr<DijkstraEngine> dijkstra;
 
  public:
-  /**
-   * @brief Construct a new GRASP Constructive Heuristic.
-   * @param alpha parameter controlling greediness.
-   * - 0.0: Pure Greedy (Best path always).
-   * - 1.0 [default]: Pure Random (Random path selection).
-   */
-  GRASPConstructiveHeuristic(const float alpha = 1.0f) : alpha(alpha) {};
+  GRASPConstructiveHeuristic(std::shared_ptr<DijkstraEngine> externalDijkstra = nullptr, const float alpha = 1.0f) 
+      : alpha(alpha), dijkstra(externalDijkstra) {}
 
-  /**
-   * @brief Generates a solution using the candidate list logic.
-   * @param problem The SFP instance.
-   * @return SFPSolution The constructed solution.
-   */
-  SFPSolution generate(const SFPProblem& problem) const override;
-
-  /**
-   * @brief Returns the algorithm name and configuration.
-   */
-  std::string getName() const override {
-    return "GRASP Constructive (alpha=" + std::to_string(alpha) + ")";
-  }
+  SFPSolution generate(const SFPProblem* problem, std::mt19937& rng) override;
+  std::string getName() const override { return "GRASP" + std::to_string(alpha); }
 };
 
 /**
  * @class GRASPLocalSearch
- * @brief Implements the "Destroy and Repair" Local Search.
  */
 class GRASPLocalSearch : public LocalSearchStrategy {
+ private:
+  mutable std::shared_ptr<DijkstraEngine> dijkstra;
+  int delta;
+
  public:
-  GRASPLocalSearch() = default;
+  GRASPLocalSearch(std::shared_ptr<DijkstraEngine> externalDijkstra = nullptr, int delta = 1) 
+      : dijkstra(externalDijkstra), delta(delta) {}
 
-  /**
-   * @brief Iteratively removes edges and tries to reconnect terminals with
-   * lower costs.
-   * @param solution The solution to be refined.
-   * @return true if global improvement was achieved.
-   */
-  bool optimize(SFPSolution& solution) const override;
-
-  std::string getName() const override { return "GRASP Local Search"; }
+  bool optimize(SFPSolution* solution, std::mt19937& rng) override;
+  std::string getName() const override { return "GRASP_LS"; }
 };
 
 /**
- * @class GRASPMetaheuristic
- * @brief The conductor of the GRASP procedure.
- * * Orchestrates the loop: Construction -> Local Search -> Best Update.
+ * @class Variable Neighborhood Search
  */
-class GRASPMetaheuristic : public SolverStrategy {
+class VNS : public LocalSearchStrategy {
  private:
-  int maxIterations;
-  std::unique_ptr<ConstructiveStrategy> constructive;
-  std::unique_ptr<LocalSearchStrategy> localSearch;
+  mutable std::shared_ptr<DijkstraEngine> dijkstra;
+  int delta;
 
  public:
-  /**
-   * @brief Constructs the GRASP solver.
-   * @param maxIter Number of iterations.
-   * @param c The constructive strategy (e.g., GRASPConstructiveHeuristic).
-   * @param ls The local search strategy (e.g., GRASPLocalSearch).
-   */
-  GRASPMetaheuristic(int maxIter, std::unique_ptr<ConstructiveStrategy> c,
-                     std::unique_ptr<LocalSearchStrategy> ls)
-      : maxIterations(maxIter),
-        constructive(std::move(c)),
-        localSearch(std::move(ls)) {}
+  VNS(std::shared_ptr<DijkstraEngine> externalDijkstra = nullptr, int delta = 1) 
+      : dijkstra(externalDijkstra), delta(delta) {}
 
-  SFPSolution solve(const SFPProblem& problem) const override;
+  bool optimize(SFPSolution* solution, std::mt19937& rng) override;
+  std::string getName() const override { return "VNS"; }
+};
 
-  std::string getName() const override {
-    return "GRASP Metaheuristic (" + std::to_string(maxIterations) + " iters)";
+/**
+ * @class Metaheuristics
+ * @brief Template solver strategy capable of dynamically combining any Constructive and Local Search.
+ */
+template <typename Constructive , typename LocalSearch>
+class Metaheuristics : public SolverStrategy {
+    static_assert(std::is_base_of_v<ConstructiveStrategy, Constructive>, 
+                "METAHEURISTIC_ERROR: Constructive type must inherit from ConstructiveStrategy.");
+    static_assert(std::is_base_of_v<LocalSearchStrategy, LocalSearch>, 
+                "METAHEURISTIC_ERROR: LocalSearch type must inherit from LocalSearchStrategy.");
+
+ private:
+  const SFPProblem* problem;
+  mutable double firstCost;
+  int maxIterations;
+  std::unique_ptr<Constructive> constructive;
+  std::unique_ptr<LocalSearch> localSearch;
+  mutable std::mt19937 rng;
+
+ public:
+    Metaheuristics(const SFPProblem* problem, const int maxIter = 1, const float alpha = 1.0f, int delta = 1) 
+        : problem(problem), firstCost(-1.0f), maxIterations(maxIter){
+       std::random_device rd;
+       rng.seed(rd());
+       auto dijkstra = std::make_shared<DijkstraEngine>(problem->getGraphPtr()); 
+       constructive = std::make_unique<Constructive>(dijkstra, alpha); 
+       localSearch = std::make_unique<LocalSearch>(dijkstra, delta); 
+    }
+
+    SFPSolution solve() const override {
+        SFPSolution best = constructive->generate(problem, rng);
+        firstCost = best.getCurrentCost();
+        while (localSearch->optimize(&best, rng));
+        for(int it = 1; it < maxIterations; it++){
+            SFPSolution temp = constructive->generate(problem, rng);
+            while (localSearch->optimize(&temp, rng));
+            if(best.getCurrentCost() > temp.getCurrentCost()) best = temp;
+        }
+
+        return best;
+    }
+    double getFirstCost() const override { return firstCost; }
+    std::string getName() const override { return constructive->getName() + "-" + localSearch->getName() + "-SFP"; }
+};
+
+
+/*
+ * @class AM-VNS
+ * @brief A Hybrid solver based on Adaptive Memory Variable Neighborhood Search
+ */
+class AMVNS : public SolverStrategy {
+ private:
+  
+  enum class EdgeState { GOOD, BAD, UGLY };
+  
+  const SFPProblem* problem;
+  mutable double firstCost;
+  int maxIterations;
+  float alpha;
+  int delta1, delta2;
+  std::unique_ptr<GRASPConstructiveHeuristic> constructive;
+  mutable std::shared_ptr<DijkstraEngine> dijkstra;
+  mutable std::mt19937 rng;
+
+  bool diversification(SFPSolution& currentSol, std::vector<EdgeState>& status, std::vector<uint8_t>& ditchs, const std::vector<SolutionEdge>& badCandidates, const int delta = 1) const;
+  void intensification(SFPSolution& currentSol, std::vector<EdgeState>& status, std::vector<uint8_t>& ditchs, const int delta = 1) const;
+
+ public:
+  AMVNS(const SFPProblem* problem, const int maxIter = 1, const float alpha = 1.0f, const int delta1 = 1, const int delta2 = 1) 
+      : problem(problem), firstCost(-1.0f), maxIterations(maxIter), alpha(alpha), delta1(delta1), delta2(delta2){
+     std::random_device rd;
+     rng.seed(rd());
+     dijkstra = std::make_shared<DijkstraEngine>(problem->getGraphPtr()); 
+     constructive = std::make_unique<GRASPConstructiveHeuristic>(dijkstra, alpha); 
   }
+
+  SFPSolution solve() const override;
+  double getFirstCost() const override { return firstCost; }
+  std::string getName() const override { return "AM-VNS"; }
 };
 
 #endif

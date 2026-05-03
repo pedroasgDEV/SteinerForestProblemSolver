@@ -1,219 +1,214 @@
+#include <algorithm>
+#include <vector>
 #include "Solver.hpp"
 
 /**
- * @brief Removes dead branches (non-terminal leaves) from the solution.
- * This ensures that all leaf nodes in the solution are Terminals.
- * @return true if any edge was removed.
- */
-bool prune(SFPSolution& solution) {
-  const auto& problem = solution.getProblem();
-  const auto& graph = problem.getGraphPtr();
-  const int nNodes = problem.getNNodes();
-  const int nEdges = problem.getNEdges();
-
-  // Calculate node degrees in the current solution
-  std::vector<int> degree(nNodes, 0);
-  bool changed = false;
-
-  // We need to reconstruct degrees based on active edges
-  for (int i = 0; i < nEdges; ++i)
-    if (solution.isEdgeActive(i)) {
-      const auto& e = graph->edges[i];
-      // Consider only the canonical direction to count degree (undirected
-      // graph)
-      if (e.source < e.target) {
-        degree[e.source]++;
-        degree[e.target]++;
-      }
-    }
-
-  // Identify Terminals (to avoid pruning)
-  std::vector<bool> isTerminal(nNodes, false);
-  for (const auto& pair : problem.getTerminals()) {
-    isTerminal[pair.first] = true;
-    isTerminal[pair.second] = true;
-  }
-
-  // Queue of candidate nodes for pruning (Degree 1 and Non-Terminal)
-  std::queue<int> q;
-  for (int i = 0; i < nNodes; ++i)
-    if (degree[i] == 1 && !isTerminal[i]) q.push(i);
-
-  // Cascading Pruning Loop
-  while (!q.empty()) {
-    int source = q.front();
-    q.pop();
-
-    // If the degree changed (e.g., became 0 because the neighbor disappeared
-    // earlier), ignore
-    if (degree[source] != 1) continue;
-
-    // Find the active edge connected to u
-    int edgeToRemove = -1;
-    int target = -1;  // Neighbor
-
-    // Simple linear search
-    for (int i = graph->ptrs[source]; i < graph->ptrs[source + 1]; ++i) {
-      if (solution.isEdgeActive(i)) {
-        const auto& e = graph->edges[i];
-        edgeToRemove = i;
-        target = e.target;
-        break;
-      }
-    }
-
-    if (edgeToRemove != -1) {
-      // Remove the edge
-      SFPMove(MoveType::REMOVE, edgeToRemove, graph->edges[edgeToRemove].weight)
-          .apply(solution);
-      changed = true;
-
-      // Update degrees
-      degree[source]--;
-      degree[target]--;
-
-      // If the neighbor became a non-terminal leaf, add to queue to prune as
-      // well
-      if (degree[target] == 1 && !isTerminal[target]) q.push(target);
-    }
-  }
-  return changed;
-}
-
-/**
- * @brief Implementation of the Local Search Phase.
+ * @brief Implementation of the Local Search Phase for GRASP.
  * * Strategy: "Destroy and Repair"
  * 1. Temporarily removes an edge from the current solution (Weight = INF).
- * 2. Identifies which terminal pairs became disconnected.
+ * 2. Identifies which terminal pairs became disconnected (including competitors).
  * 3. Tries to reconnect them using the shortest path in the modified graph.
  * 4. If the reconstructed solution is cheaper, the move is accepted.
  */
-bool GRASPLocalSearch::optimize(SFPSolution& solution) const {
-  const auto& problem = solution.getProblem();
+bool GRASPLocalSearch::optimize(SFPSolution* solution, std::mt19937& rng) {
+  if (!dijkstra)
+    dijkstra = std::make_shared<DijkstraEngine>(solution->getProblem()->getGraphPtr());
 
-  // Create a local mutable copy of the graph to apply penalties (G' in the
-  // paper) Using the copy constructor defined in Graph.hpp
-  Graph workingGraph = *problem.getGraphPtr();
+  int nEdges = solution->getProblem()->getNEdges();
+  std::vector<uint8_t> ditchs(nEdges, 0);
+  
+  std::vector<SolutionEdge> edgesToTest = solution->getEdges();
+  std::shuffle(edgesToTest.begin(), edgesToTest.end(), rng);
 
-  // Reuse Dijkstra Engine for performance
-  DijkstraEngine dijkstra(problem.getNNodes());
+  std::unordered_set<int> affectedPairs;
+  affectedPairs.reserve(solution->getNPairs());
+  SFPNeighborhood destroy;
+  destroy.moves.reserve(solution->getNPairs());
+  SFPNeighborhood repair;
+  repair.moves.reserve(solution->getNPairs());
+  std::vector<int> pairsToRepair;
+  pairsToRepair.reserve(solution->getNPairs());
 
-  // Constants
-  const float INF = std::numeric_limits<float>::max();
-  const int nEdges = problem.getNEdges();
-  const int nNodes = problem.getNNodes();
+  for (const auto& edgeToDrop : edgesToTest) {
+    if (!solution->isEdgeActive(edgeToDrop.id)) continue;
 
-  bool globalImprovement = false;
-  // Initial pruning to clean up any mess from the constructive phase
-  if (prune(solution)) globalImprovement = true;
-  bool improvementFound = true;
+    ditchs[edgeToDrop.id] = 1;
+    if (edgeToDrop.reverse_id != -1) ditchs[edgeToDrop.reverse_id] = 1;
 
-  // Loop until no more improvements are found (Local Optimum)
-  while (improvementFound) {
-    improvementFound = false;
+    double originalCost = solution->getCurrentCost();
 
-    // Identify all active edges in the current solution (S_P')
-    std::vector<int> currentSolutionEdges;
-    currentSolutionEdges.reserve(nEdges / 2);
-    for (int i = 0; i < nEdges; ++i)
-      if (solution.isEdgeActive(i)) {
-        const auto& edge = workingGraph.edges[i];
-        // Only process the edge if source < target
-        // This ensures we don't try to remove 0->1 AND 1->0 separately.
-        if (edge.source < edge.target) currentSolutionEdges.push_back(i);
+    affectedPairs.clear();
+    destroy.moves.clear();
+    pairsToRepair.clear();
+    repair.moves.clear();
+
+    // LEVEL 1 (The Epicenter): Pairs that pass exactly through the removed edge
+    std::vector<int> currentWave;
+    for (int pair_id : solution->getEdgePairs(edgeToDrop))
+      if (affectedPairs.insert(pair_id).second) {
+        destroy.moves.push_back({solution, MoveType::DSCNCT_PAIR, pair_id, solution->getPairEdges(pair_id)});
+        currentWave.push_back(pair_id);
       }
 
-    // Iterate over each edge
-    for (int edgeToRemove : currentSolutionEdges) {
-      // Set cost of the current edge to infinity
-      float originalWeight = workingGraph.edges[edgeToRemove].weight;
-      workingGraph.edges[edgeToRemove].weight = INF;
-
-      // Must also update the reverse edge to maintain graph consistency
-      int revIdx = workingGraph.edges[edgeToRemove].reverseEdgePtr;
-      if (revIdx != -1) workingGraph.edges[revIdx].weight = INF;
-
-      // Efficiently identify broken connectivity using a temporary DSU
-      DSU solDSU(nNodes);
-
-      // Rebuild components using ALL active edges EXCEPT the one we removed
-      for (int i = 0; i < nEdges; ++i)
-        if (solution.isEdgeActive(i))
-          // Skip the removed edge and its reverse
-          if (i != edgeToRemove && i != revIdx) {
-            const auto& e = workingGraph.edges[i];
-            // Union only once per physical edge
-            if (e.source < e.target) solDSU.unite(e.source, e.target);
+    // LEVELS 2 TO DELTA (The Shock Wave): Cascading Competitors
+    for (int d = 2; d <= delta; ++d) {
+      std::vector<int> nextWave;
+      for (int p : currentWave)
+        for (int comp : solution->getCompetingPairs(p))
+          if (affectedPairs.insert(comp).second) {
+            destroy.moves.push_back({solution, MoveType::DSCNCT_PAIR, comp, solution->getPairEdges(comp)});
+            nextWave.push_back(comp);
           }
+      if (nextWave.empty()) break; 
+      currentWave = std::move(nextWave);
+    }
 
-      // Create a candidate solution based on the current one
-      SFPSolution candidate = solution;
+    destroy.apply();
+    bool feasible = true;
+    pairsToRepair.assign(affectedPairs.begin(), affectedPairs.end());
+    std::shuffle(pairsToRepair.begin(), pairsToRepair.end(), rng);
+    
+    for (auto pair : pairsToRepair) {
+      auto [source, target] = solution->getPairNodes(pair);
+      auto result = dijkstra->getShortPath(source, target, solution->getBitmask(), &ditchs);
+      
+      if (result.second < 0) {
+        feasible = false;
+        break;
+      }
+      repair.addMoveApplying({solution, MoveType::CNCT_PAIR, pair, std::move(result.first)});
+    }
 
-      // Remove the edge 'e' from the candidate solution
-      SFPMove removeMove(MoveType::REMOVE, edgeToRemove, originalWeight);
-      removeMove.apply(candidate);
+    double newCost = solution->getCurrentCost();
+    
+    if (feasible && newCost < originalCost - 1e-4) return true;
+    else {
+      repair.undo();
+      destroy.undo();
+    }
 
-      // For each (pivot, destination) affected...
-      bool reconstructionPossible = true;
-      for (const auto& pair : problem.getTerminals()) {
-        int source = pair.first;
-        int target = pair.second;
+    ditchs[edgeToDrop.id] = 0;
+    if (edgeToDrop.reverse_id != -1) ditchs[edgeToDrop.reverse_id] = 0;
+  }
 
-        // Check if this specific pair was disconnected
-        if (!solDSU.isConnected(source, target)) {
-          // Reconnect using Dijkstra avoiding infinite edges
-          auto result = dijkstra.getShortPath(workingGraph, source, target);
-          float pathCost = result.second;
-          const std::vector<int>& newPath = result.first;
+  return false;
+} 
 
-          // If path cost is infinite or negative, the graph became disconnected
-          if (pathCost >= INF || pathCost < 0) {
-            reconstructionPossible = false;
-            break;
-          }
+/**
+ * @brief Implementation of the Variable Neighborhood Descent (VNS) Local Search.
+ */
+bool VNS::optimize(SFPSolution* solution, std::mt19937& rng) {
+  if (!dijkstra)
+    dijkstra = std::make_shared<DijkstraEngine>(solution->getProblem()->getGraphPtr());
+  
+  int nEdgesGraph = solution->getProblem()->getNEdges();
+  std::vector<uint8_t> ditchs(nEdgesGraph, 0);
 
-          // Update pivot and destination with the new path
-          for (int newEdgeIdx : newPath)
-            if (!candidate.isEdgeActive(newEdgeIdx)) {
-              // Get the real weight from the graph
-              float weight = workingGraph.edges[newEdgeIdx].weight;
-              SFPMove addMove(MoveType::ADD, newEdgeIdx, weight);
-              addMove.apply(candidate);
+  std::vector<SolutionEdge> shuffledEdges = solution->getEdges();
+  if (shuffledEdges.empty()) return false;
 
-              // Update local DSU to avoid re-routing if multiple
-              // pairs share the same missing link that was just fixed.
-              const auto& e = workingGraph.edges[newEdgeIdx];
-              solDSU.unite(e.source, e.target);
-            }
+  int N = (int) shuffledEdges.size();
+  if (N == 0) return false;
+  
+  int k1 = std::max(2, (int)(N * 0.05));
+  int k2 = std::max(k1 + 1, (int)(N * 0.10));
+  int k3 = std::max(k2 + 1, (int)(N * 0.15));
+  int k4 = std::max(k3 + 1, (int)(N * 0.20));
+  
+  int k_steps[] = {1, k1, k2, k3, k4};
+
+  std::unordered_set<int> affectedPairs;
+  affectedPairs.reserve(solution->getNPairs());
+  SFPNeighborhood destroy;
+  destroy.moves.reserve(solution->getNPairs());
+  SFPNeighborhood repair;
+  repair.moves.reserve(solution->getNPairs());
+  std::vector<int> pairsToRepair;
+  pairsToRepair.reserve(solution->getNPairs());
+
+  for (int k : k_steps) {
+    if (k > N) k = N; 
+
+    int attempts = (k == 1) ? N : std::min(10, N);
+    
+    std::shuffle(shuffledEdges.begin(), shuffledEdges.end(), rng);
+    
+    for(int att = 0; att < attempts; att++){
+      double originalCost = solution->getCurrentCost();
+      
+      affectedPairs.clear();    
+      destroy.moves.clear();
+      pairsToRepair.clear();
+      repair.moves.clear();
+      
+      if (k > 1) std::shuffle(shuffledEdges.begin(), shuffledEdges.end(), rng);
+      else std::swap(shuffledEdges[0], shuffledEdges[att]);
+       
+   
+      for (int i = 0; i < k; i++) { 
+        const auto& edgeToDrop = shuffledEdges[i];
+        if (!solution->isEdgeActive(edgeToDrop.id)) continue;
+   
+        ditchs[edgeToDrop.id] = 1;  
+        if (edgeToDrop.reverse_id != -1) ditchs[edgeToDrop.reverse_id] = 1;
+   
+        // LEVEL 1 (The Epicenter): Pairs that pass exactly through the removed edge
+        std::vector<int> currentWave; 
+        for (int pair_id : solution->getEdgePairs(edgeToDrop))
+          if (affectedPairs.insert(pair_id).second) {
+            destroy.moves.push_back({solution, MoveType::DSCNCT_PAIR, pair_id, solution->getPairEdges(pair_id)});
+            currentWave.push_back(pair_id);
+          } 
+   
+        // LEVELS 2 TO DELTA (The Shock Wave): Cascading Competitors
+        for (int d = 2; d <= delta; ++d) {
+          std::vector<int> nextWave; 
+          for (int p : currentWave) 
+            for (int comp : solution->getCompetingPairs(p))
+              if (affectedPairs.insert(comp).second) {
+                destroy.moves.push_back({solution, MoveType::DSCNCT_PAIR, comp, solution->getPairEdges(comp)});
+                nextWave.push_back(comp);
+              }
+          if (nextWave.empty()) break; 
+          currentWave = std::move(nextWave);
+        }
+      }
+      
+      destroy.apply();
+      bool feasible = true;
+      pairsToRepair.assign(affectedPairs.begin(), affectedPairs.end());
+      std::shuffle(pairsToRepair.begin(), pairsToRepair.end(), rng);
+
+      for (int pair : pairsToRepair) {
+        auto [source, target] = solution->getPairNodes(pair);
+        auto result = dijkstra->getShortPath(source, target, solution->getBitmask(), &ditchs);
+        
+        if (result.second < 0) {
+          feasible = false;
+          break;
+        }
+
+        repair.addMoveApplying({solution, MoveType::CNCT_PAIR, pair, std::move(result.first)});
+
+        if (solution->getCurrentCost() >= originalCost - 1e-4) {
+          feasible = false;
+          break;
         }
       }
 
-      // If newCost < cost then
-      if (reconstructionPossible &&
-          candidate.getObjectiveValue() < solution.getObjectiveValue()) {
-        // Update (Sp, Sv)
-        solution = candidate;
+      double newCost = solution->getCurrentCost();
 
-        globalImprovement = true;
-        improvementFound = true;
-
-        // Restore the removed edge
-        workingGraph.edges[edgeToRemove].weight = originalWeight;
-        if (revIdx != -1) workingGraph.edges[revIdx].weight = originalWeight;
-
-        break;
+      for (int i = 0; i < k; i++) {
+        ditchs[shuffledEdges[i].id] = 0;
+        if (shuffledEdges[i].reverse_id != -1) ditchs[shuffledEdges[i].reverse_id] = 0;
       }
 
-      // We just restore the graph weight. The 'candidate' object is discarded.
-      workingGraph.edges[edgeToRemove].weight = originalWeight;
-      if (revIdx != -1) workingGraph.edges[revIdx].weight = originalWeight;
+      if (feasible && newCost < originalCost - 1e-4) return true;
+      
+      repair.undo();
+      destroy.undo();
+      if (k == 1) std::swap(shuffledEdges[0], shuffledEdges[att]);
     }
   }
-
-  // Final pruning: Ensures the final solution has no loose ends
-  // This is very important as the "Reconnect" process can create new dead
-  // branches
-  if (prune(solution)) globalImprovement = true;
-
-  return globalImprovement;
+  return false;
 }

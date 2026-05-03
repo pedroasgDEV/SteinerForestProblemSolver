@@ -16,8 +16,7 @@
 struct Edge {
   int source;          ///< ID of the source node
   int target;          ///< ID of the target node
-  int reverseEdgePtr;  ///< Index of the reverse edge. -1 if is not alocated
-                       ///< yet.
+  int reverseEdgePtr;  ///< Index of the reverse edge. -1 if is not alocated yet.
   float weight;        ///< The weight of this edge
 };
 
@@ -28,8 +27,8 @@ struct Edge {
 struct Graph {
   std::vector<int> ptrs;     ///< CSR row pointers.
   std::vector<Edge> edges;   ///< Contiguous array containing all graph edges.
-  const float totalWeight;   ///< The sum of all weight of this graph
-  const int nNodes, nEdges;  ///< the number of nodes and edges of this graph
+  float totalWeight;         ///< The sum of all weight of this graph
+  int nNodes, nEdges;  ///< the number of nodes and edges of this graph
 
   /**
    * @brief Construtor Raw Data -> CSR.
@@ -40,9 +39,9 @@ struct Graph {
         const int nNodes)
       : totalWeight(0.0f), nNodes(nNodes), nEdges(edgeList.size() * 2) {
     if (nNodes <= 0)
-      throw std::runtime_error("ERROR: Number of nodes must be positive.");
+      throw std::runtime_error("\t\tNumber of nodes must be positive.");
     if (edgeList.empty())
-      throw std::runtime_error("ERROR: edgeList cannot be empty");
+      throw std::runtime_error("\t\tedgeList cannot be empty");
 
     // Temporary Adjacency List
     struct TempEdge {
@@ -59,7 +58,7 @@ struct Graph {
       float weight = std::get<2>(edge);
 
       if (origin < 0 || origin >= nNodes || target < 0 || target >= nNodes)
-        throw std::runtime_error("ERROR: Edge index out of bounds.");
+        throw std::runtime_error("\t\tEdge index out of bounds.");
 
       adj[origin].push_back({target, weight});
       adj[target].push_back({origin, weight});
@@ -94,14 +93,11 @@ struct Graph {
       // Find the index of edge v -> u
       for (int j = ptrs[target]; j < ptrs[target + 1]; ++j)
         if (edges[j].target == source) {
-          // Link them both ways
-          // const_cast needed because we are initializing 'const' members in
-          // body
-          const_cast<int&>(edges[i].reverseEdgePtr) = j;
-          const_cast<int&>(edges[j].reverseEdgePtr) = i;
+          edges[i].reverseEdgePtr = j;
+          edges[j].reverseEdgePtr = i;
           break;
         }
-      const_cast<float&>(totalWeight) = static_cast<float>(tempTotalWeight);
+      totalWeight = tempTotalWeight;
     }
   }
   

@@ -45,3 +45,8 @@ cmake-build-*/
 # Mac OS
 .DS_Store
 
+#IRACE
+tuning/irace.Rdata
+tuning/irace_log.txt
+tuning/c*.stdout
+tuning/c*.stderr

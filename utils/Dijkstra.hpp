@@ -1,9 +1,10 @@
 #ifndef DIJKSTRA_HPP
 #define DIJKSTRA_HPP
 
-#include <queue>
-#include <utility>
+#include <cstdint>
 #include <vector>
+#include <algorithm>
+#include <memory>
 
 #include "Graph.hpp"
 
@@ -16,27 +17,26 @@
  */
 class DijkstraEngine {
  private:
+  const std::shared_ptr<Graph> graph;
   std::vector<float> dist;
-  std::vector<int> visitedToken;
-  std::vector<std::pair<int, int>>
-      parent;  // Stores the predecessor {node, edge} of each node for path
-               // reconstruction.
-  int nNodes;
-  int currentToken;  // The "timestamp" or ID of the current Dijkstra execution.
+  std::vector<unsigned long long int> visitedToken;
+  std::vector<std::pair<int, int>> parent;  // Stores the predecessor {node, edge} of each node for path reconstruction.
+  unsigned long long int currentToken;  // The "timestamp" or ID of the current Dijkstra execution.
 
   using Pii = std::pair<float, int>;
-  std::priority_queue<Pii, std::vector<Pii>, std::greater<Pii>> pq;
+  std::vector<Pii> pq;
 
  public:
   /**
    * @brief Constructor. Allocates memory once.
-   * @param nodes Total number of nodes in the graph.
+   * @param nodes Total number of nodes in the graph  
    */
-  DijkstraEngine(int nodes) : nNodes(nodes), currentToken(0) {
+  DijkstraEngine(const std::shared_ptr<Graph> graph) : graph(graph), currentToken(0){
     // Resize vectors once to prevent heap fragmentation during execution.
-    dist.resize(nNodes);
-    parent.resize(nNodes);
-    visitedToken.resize(nNodes, 0);
+    dist.resize(graph->nNodes);
+    parent.resize(graph->nNodes);
+    visitedToken.resize(graph->nNodes, 0);
+    pq.reserve(graph->nEdges);
   }
 
   /**
@@ -44,33 +44,35 @@ class DijkstraEngine {
    * @param graph The reference graph (CSR).
    * @param source The starting node ID.
    * @param target The destination node ID.
-   * @return A pair containing:
-   * 1. std::vector<int>: The sequence of edges (path). Empty if unreachable.
-   * 2. float: The total cost of the path.
+   * @param bridges Optional bitmask of edges with 0 cost.
+   * @param ditchs Optional bitmask of edges with infinite cost (ignored).
+   * @return A pair containing the path and the cost.
    */
-  std::pair<std::vector<int>, float> getShortPath(const Graph& graph,
-                                                  const int source,
-                                                  const int target) {
+  std::pair<std::vector<int>, float> getShortPath(
+      const int source, const int target,
+      const std::vector<uint8_t>* bridges = nullptr,
+      const std::vector<uint8_t>* ditchs = nullptr) {
+      
     currentToken++;  // Increment the global token.
+    
+    pq.clear();
 
-    pq = std::priority_queue<Pii, std::vector<Pii>, std::greater<Pii>>();
     dist[source] = 0.0f;
-    visitedToken[source] = currentToken;  // Mark source as visited in THIS run
+    visitedToken[source] = currentToken; 
     parent[source] = {-1, -1};
-    pq.push({0.0f, source});
+    pq.push_back({0.0f, source});
 
-    const auto& ptrs = graph.ptrs;
-    const auto& edges = graph.edges;
+    const auto& ptrs = graph->ptrs;
+    const auto& edges = graph->edges;
 
     bool found = false;
 
     while (!pq.empty()) {
-      float d = pq.top().first;
-      int u = pq.top().second;
-      pq.pop();
+      std::pop_heap(pq.begin(), pq.end(), std::greater<Pii>());
+      float d = pq.back().first;
+      int u = pq.back().second;
+      pq.pop_back();
 
-      // If the token is old, treat dist[u] as Infinity.
-      // If token is current but we found a better path efficiently, skip.
       if (visitedToken[u] == currentToken && d > dist[u]) continue;
 
       if (u == target) {
@@ -79,28 +81,34 @@ class DijkstraEngine {
       }
 
       for (int i = ptrs[u]; i < ptrs[u + 1]; ++i) {
+        if (ditchs && (*ditchs)[i]) continue;
+
         const auto& edge = edges[i];
+        float edgeCost = edge.weight;
+
+        if (bridges && (*bridges)[i]) {
+            edgeCost = 0.0f;
+        }
 
         int v = edge.target;
-        float newDist = d + edge.weight;
+        float newDist = d + edgeCost;
 
-        // Lazy Initialization logic for neighbor 'v'
         bool isFirstVisit = (visitedToken[v] != currentToken);
 
         if (isFirstVisit || newDist < dist[v]) {
           dist[v] = newDist;
           parent[v] = {u, i};
           visitedToken[v] = currentToken;
-          pq.push({newDist, v});
+          pq.push_back({newDist, v});
+          std::push_heap(pq.begin(), pq.end(), std::greater<Pii>());
         }
       }
     }
 
-    // Target unreachable
     if (!found) return {{}, -1.0f};
 
     std::vector<int> path;
-    path.reserve(nNodes / 10);  // Reserve estimated size to avoid reallocations
+    path.reserve(graph->nNodes / 10);  
 
     int curr = target;
     while (curr != source && curr != -1) {
@@ -113,7 +121,6 @@ class DijkstraEngine {
       curr = node;
     }
 
-    // Return Inverted Path
     return {path, dist[target]};
   }
 };

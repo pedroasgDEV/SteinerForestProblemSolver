@@ -1,73 +1,34 @@
-#include <iostream>
+#include <memory>
 #include <string>
-#include <vector>
+#include <chrono>
+#include <cstddef>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
 
-#include "tests/tests.hpp"
+#include "tests/Tests.hpp"
+#include "models/SFP.hpp"
+#include "algorithms/Solver.hpp"
 #include "utils/CLI11.hpp"
-#include "utils/ReportGenerator.hpp"
 
-#ifdef _WIN32
-#include <windows.h>
-const char PATH_SEP = '\\';
-
-void getFilesInDirectory(const std::string& dirPath,
-                         std::vector<std::string>& outFiles) {
-  std::string searchPath = dirPath;
-  if (searchPath.back() != PATH_SEP) searchPath += PATH_SEP;
-  std::string wildcardPath = searchPath + "*.*";
-
-  WIN32_FIND_DATA fd;
-  HANDLE hFind = ::FindFirstFile(wildcardPath.c_str(), &fd);
-
-  if (hFind != INVALID_HANDLE_VALUE) {
-    do {
-      if (strcmp(fd.cFileName, ".") == 0 || strcmp(fd.cFileName, "..") == 0)
-        continue;
-
-      std::string fullFileName = searchPath + fd.cFileName;
-
-      if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-        getFilesInDirectory(fullFileName, outFiles);
-      else
-        outFiles.push_back(fullFileName);
-    } while (::FindNextFile(hFind, &fd));
-    ::FindClose(hFind);
-  }
+std::string getFileName(const std::string& path) {
+    size_t lastSlash = path.find_last_of("/\\");
+    if (lastSlash != std::string::npos) return path.substr(lastSlash + 1);
+    return path;
 }
 
-#else
-#include <dirent.h>
-#include <sys/stat.h>
-const char PATH_SEP = '/';
-
-void getFilesInDirectory(const std::string& dirPath,
-                         std::vector<std::string>& outFiles) {
-  DIR* dir = opendir(dirPath.c_str());
-  struct dirent* ent;
-
-  if (dir != NULL) {
-    while ((ent = readdir(dir)) != NULL) {
-      std::string fname = ent->d_name;
-      if (fname == "." || fname == "..") continue;
-
-      std::string fullPath = dirPath;
-      if (fullPath.back() != PATH_SEP) fullPath += PATH_SEP;
-      fullPath += fname;
-
-      struct stat st;
-      if (stat(fullPath.c_str(), &st) == 0) {
-        if (S_ISDIR(st.st_mode))
-          getFilesInDirectory(fullPath, outFiles);
-        else
-          outFiles.push_back(fullPath);
-      }
-    }
-    closedir(dir);
-  } else {
-    std::cerr << "ERROR: Could not open directory: " << dirPath << std::endl;
-  }
+bool hasExtension(const std::string& str, const std::string& suffix) {
+    std::string tmp_str = getFileName(str);
+    if (tmp_str.length() < suffix.length()) return false;
+    return tmp_str.compare(tmp_str.length() - suffix.length(), suffix.length(), suffix) == 0;
 }
-#endif
+
+void panic(const std::string& msg) {
+    std::cerr << "\n========================================" << std::endl;
+    std::cerr << "[FATAL ERROR]: " << msg << std::endl;
+    std::cerr << "========================================\n" << std::endl;
+    std::exit(EXIT_FAILURE);
+}
 
 int main(int argc, char** argv) {
   CLI::App app{"Steiner Forest Problem Solver"};
@@ -77,8 +38,6 @@ int main(int argc, char** argv) {
   bool flag_test_DSU = false;
   bool flag_test_dijkstra = false;
   bool flag_test_SFP = false;
-  bool flag_test_cons = false;
-  bool flag_test_lsearch = false;
 
   app.add_flag("--test", flag_test_all, "Runs all available tests");
   app.add_flag("--test-graph", flag_test_graph,
@@ -88,93 +47,111 @@ int main(int argc, char** argv) {
                "Runs only the Dijkstra algorithm tests");
   app.add_flag("--test-sfp", flag_test_SFP,
                "Runs only the Steiner Forest Problem implementation tests");
-  app.add_flag("--test-cons", flag_test_cons,
-               "Runs only GRASP constructive heuristic tests");
-  app.add_flag("--test-lsrch", flag_test_lsearch,
-               "Runs only GRASP Local Searh tests");
 
   std::string input_file;
-  std::string input_dir;
   float alpha = 1.0f;
-  bool alpha_variation = false;
+  int maxIter = 1;
+  bool flag_irace = false;
+  bool flag_grasp = false;
+  bool flag_amvns = false;
+  bool flag_vns = false;
+  int delta1 = 1;
+  int delta2 = 1;
 
+  app.add_option("-d,--delta1", delta1, "Delta parameter (Shockwave Level) for the Local Search / Diversification phase")
+      ->check(CLI::Range(0, 5));
+  app.add_option("-D,--delta2", delta2, "Delta parameter for AMVNS Intensification phase")
+      ->check(CLI::Range(0, 5));
+  app.add_flag("--IRACE", flag_irace, "Runs for tuning");
+  app.add_flag("--GRASP", flag_grasp, "Runs GRASP-SFP metaheuristic");
+  app.add_flag("--AMVNS", flag_amvns, "Runs AM-VNS metaheuristic");
+  app.add_flag("--VNS", flag_vns, "Runs GRASP-VNS-SFP metaheuristic");
   app.add_option("-f,--file", input_file, "Path to a single .stp file to solve")
       ->check(CLI::ExistingFile);
-  app.add_option("-d,--directory", input_dir,
-                 "Path to a directory containing .stp files (Without the "
-                 "\"\\\" or \"/\" at the end)")
-      ->check(CLI::ExistingDirectory);
-  app.add_option("-a,--alpha", alpha,
-                 "Alpha parameter for constructive heuristic")
+  app.add_option("-a,--alpha", alpha, "Alpha parameter for constructive heuristic")
       ->check(CLI::Range(0.0, 1.0));
-  app.add_flag("-v,--variation", alpha_variation,
-               "Test alphas [0.0, 0.1 ... 1.0] and pick best");
+  app.add_option("-i,--iterations", maxIter, "The limit of iterations of the metaheuristic")
+      ->check(CLI::PositiveNumber);
 
   CLI11_PARSE(app, argc, argv);
-
-  if (flag_test_all || flag_test_graph || flag_test_dijkstra || flag_test_SFP || flag_test_cons || flag_test_DSU || flag_test_lsearch) {
+  
+  if (flag_test_all || flag_test_graph || flag_test_dijkstra || flag_test_SFP || flag_test_DSU) {
     if (flag_test_all) {
       graphTests();
       dijkstraTests();
       dsuTests();
       steinerForestTests();
-      constructiveTests();
-      localSearchTests();
       return 0;
     }
     if (flag_test_graph) graphTests();
     if (flag_test_dijkstra) dijkstraTests();
     if (flag_test_DSU) dsuTests();
     if (flag_test_SFP) steinerForestTests();
-    if (flag_test_cons) constructiveTests();
-    if (flag_test_lsearch) localSearchTests();
     return 0;
   }
+  else if(!input_file.empty()){
+    if(!hasExtension(input_file, ".stp")){ panic("The file extension must be '.stp'."); }
 
-  if (!input_file.empty())
-    if (hasExtension(input_file, ".stp")) {
-      FileStats stats;
-
-      if (alpha_variation)
-        stats = findBestAlpha(input_file);
-      else
-        stats = processFile(input_file, alpha);
-
-      printMarkdownHeader();
-      printFileRow(stats);
+    std::ifstream file(input_file);
+    if (!file.is_open()) { panic("The file cannot be opened"); }
+    
+    SFPProblem problem;
+    try { file >> problem;} 
+    catch (const std::exception& e) { panic("Error parsing file\n" + std::string(e.what())); }
+    
+    double firstSolutionCost = 0.0f, solutionCost = 0.0f, timeMs = 0.0f; 
+    if(!flag_grasp && !flag_vns && !flag_amvns){
+        auto generate = std::make_unique<GRASPConstructiveHeuristic>(nullptr, alpha);
+        static std::random_device rd; static std::mt19937 rng(rd()); 
+        auto start = std::chrono::high_resolution_clock::now();
+        auto solution = generate->generate(&problem, rng);
+        auto end = std::chrono::high_resolution_clock::now();
+        
+        if(!solution.isFeasible()) panic("No valid solution was found.");
+        firstSolutionCost = solution.getCurrentCost();
+        solutionCost = firstSolutionCost;
+        timeMs = std::chrono::duration<double, std::milli>(end - start).count();
     }
+    else {
+        std::unique_ptr<SolverStrategy> metaheuristic;
+        if (flag_grasp) metaheuristic = std::make_unique<Metaheuristics<GRASPConstructiveHeuristic, GRASPLocalSearch>>(&problem, maxIter, alpha, delta1);
+        else if (flag_vns) metaheuristic = std::make_unique<Metaheuristics<GRASPConstructiveHeuristic, VNS>>(&problem, maxIter, alpha, delta1);
+        else metaheuristic = std::make_unique<AMVNS>(&problem, maxIter, alpha, delta1, delta2);
+        
+        auto start = std::chrono::high_resolution_clock::now();
+        auto solution = metaheuristic->solve();
+        auto end = std::chrono::high_resolution_clock::now();
 
-    else
-      std::cout << "ERROR: The file" << input_file << " is not \".stp\"";
-  else if (!input_dir.empty()) {
-    std::vector<std::string> files;
-    std::vector<FileStats> results;
-
-    getFilesInDirectory(input_dir, files);
-
-    if (files.empty()) {
-      std::cout << "No files found in directory." << std::endl;
-      return 0;
+        if(!solution.isFeasible()) panic("No valid solution was found.");
+        firstSolutionCost = metaheuristic->getFirstCost();
+        solutionCost = solution.getCurrentCost();
+        timeMs = std::chrono::duration<double, std::milli>(end - start).count();
     }
+    
+    if(flag_irace){ std::cout << solutionCost ; return 0; }
 
-    printMarkdownHeader();
+    std::string filename = getFileName(input_file);
+    int nNodes = problem.getNNodes();
+    int nEdges = problem.getNEdges();
+    int nTerminals = problem.getTerminals().size();
+    float alphaUsed = alpha;
 
-    for (const auto& fullPath : files)
-      if (hasExtension(fullPath, ".stp")) {
-        FileStats stats;
-        if (alpha_variation)
-          stats = findBestAlpha(fullPath);
-        else
-          stats = processFile(fullPath, alpha);
-
-        if (stats.nNodes > 0) {
-          printFileRow(stats);
-          results.push_back(stats);
-        }
-      }
-
-    printSummary(input_dir, results);
-  } else
+    std::cout << "\n================ EXECUTION SUMMARY ================" << std::endl;
+    std::cout << std::left << std::setw(20) << "Instance File:" << filename << std::endl;
+    std::cout << std::left << std::setw(20) << "Nodes:"         << nNodes << std::endl;
+    std::cout << std::left << std::setw(20) << "Edges:"         << nEdges << std::endl;
+    std::cout << std::left << std::setw(20) << "Terminals:"     << nTerminals << std::endl;
+    std::cout << std::left << std::setw(20) << "Alpha Used:"    << std::fixed << std::setprecision(2) << alphaUsed << std::endl;
+    std::cout << "---------------------------------------------------" << std::endl;
+    std::cout << std::left << std::setw(20) << "First Solution Cost:" << std::fixed << std::setprecision(4) << firstSolutionCost << std::endl;
+    std::cout << std::left << std::setw(20) << "Solution Cost:" << std::fixed << std::setprecision(4) << solutionCost << std::endl;
+    std::cout << std::left << std::setw(20) << "Execution Time:" << std::fixed << std::setprecision(3) << timeMs << " ms" << std::endl;
+    std::cout << "===================================================\n" << std::endl;
+  
+    return 0;
+  }
+  else {
     std::cout << "No input provided. Use --help to see options." << std::endl;
-  return 0;
+    return 0;
+  }
 }

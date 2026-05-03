@@ -1,4 +1,5 @@
-#include "tests.hpp"
+#include "Tests.hpp"
+#include <memory>
 
 // Helper function to verify if the list of EDGE INDICES corresponds to the
 // sequence of NODES
@@ -43,8 +44,8 @@ void dijkstraTests() {
   Graph g1({{0, 1, 10.0f}, {1, 2, 10.0f}}, 3);
 
   // Setup Engine for 3 nodes
-  DijkstraEngine engine1(3);
-  auto res1 = engine1.getShortPath(g1, 0, 2);
+  DijkstraEngine engine1(std::make_shared<Graph>(g1));
+  auto res1 = engine1.getShortPath(0, 2);
 
   // Expect: 0 -> 1 -> 2
   assert(verifyPath(g1, res1.first, {0, 1, 2}));
@@ -56,8 +57,8 @@ void dijkstraTests() {
   // 0-1 (10), 1-2 (10), 0-2 (5)
   Graph g2({{0, 1, 10.0f}, {1, 2, 10.0f}, {0, 2, 5.0f}}, 3);
 
-  DijkstraEngine engine2(3);
-  auto res2 = engine2.getShortPath(g2, 0, 2);
+  DijkstraEngine engine2(std::make_shared<Graph>(g2));
+  auto res2 = engine2.getShortPath(0, 2);
 
   // Expect: 0 -> 2 (Direct path is cheaper)
   assert(verifyPath(g2, res2.first, {0, 2}));
@@ -70,51 +71,63 @@ void dijkstraTests() {
   // Graph: Disconnected components {0, 1} and {2, 3}
   Graph g3({{0, 1, 5.0f}, {2, 3, 5.0f}}, 4);
 
-  DijkstraEngine engine3(4);
-  auto res3 = engine3.getShortPath(g3, 0, 3);
+  DijkstraEngine engine3(std::make_shared<Graph>(g3));
+  auto res3 = engine3.getShortPath(0, 3);
 
   // Expect: Empty path and cost -1 (or whatever your logic for infinity is)
   assert(res3.first.empty());
-  // Note: Verify if your implementation returns -1.0f or Infinity for
-  // unreachable
   assert(res3.second == -1.0f);
 
   std::cout << "-> Passed." << std::endl;
 
-  std::cout << "[Dijkstra] Dynamic Obstacle (Soft Deletion)... ";
+  std::cout << "[Dijkstra] Dynamic Obstacle (Ditch Bitmask)... ";
 
-  // Graph: Two paths from 0 to 2
-  // Path A: 0 -> 1 -> 2 (Cost 20)
-  // Path B: 0 -> 3 -> 2 (Cost 100)
   Graph g4(
       {
-          {0, 1, 10.0f},
-          {1, 2, 10.0f},  // Cheap path
-          {0, 3, 50.0f},
-          {3, 2, 50.0f}  // Expensive path
+          {0, 1, 10.0f},  
+          {1, 2, 10.0f},  
+          {0, 3, 50.0f},  
+          {3, 2, 50.0f}   
       },
       4);
 
-  DijkstraEngine engine4(4);
-  auto run1 = engine4.getShortPath(g4, 0, 2);
+  DijkstraEngine engine4(std::make_shared<Graph>(g4));
+  auto run1 = engine4.getShortPath(0, 2);
 
-  // Should take cheap path (0-1-2)
   assert(verifyPath(g4, run1.first, {0, 1, 2}));
   assert(run1.second == 20.0f);
 
-  // Block the cheap path (remove edge 0-1)
-  Graph g5(
-      {
-          {1, 2, 10.0f},  // Cheap path
-          {0, 3, 50.0f},
-          {3, 2, 50.0f}  // Expensive path
-      },
-      4);
-  auto run2 = engine4.getShortPath(g5, 0, 2);
+  // Helper to find the actual CSR index of an edge
+  auto getEdgeIdx = [&](int u, int v) {
+      for (size_t i = 0; i < g4.edges.size(); ++i) {
+          if (g4.edges[i].source == u && g4.edges[i].target == v) return i;
+      }
+      return (size_t)-1;
+  };
 
-  // Should take expensive path (0-3-2)
-  assert(verifyPath(g5, run2.first, {0, 3, 2}));
+  // ZERO-COPY: Block the cheap path
+  std::vector<uint8_t> ditchMask(g4.edges.size(), 0);
+  ditchMask[getEdgeIdx(0, 1)] = true; 
+
+  auto run2 = engine4.getShortPath(0, 2, nullptr, &ditchMask);
+
+  assert(verifyPath(g4, run2.first, {0, 3, 2}));
   assert(run2.second == 100.0f);
+
+  std::cout << "-> Passed." << std::endl;
+
+  std::cout << "[Dijkstra] Zero-Cost Path (Bridge Bitmask)... ";
+
+  // ZERO-COPY: Make the expensive path completely free
+  std::vector<uint8_t> bridgeMask(g4.edges.size(), 0);
+  bridgeMask[getEdgeIdx(0, 3)] = true; 
+  bridgeMask[getEdgeIdx(3, 2)] = true; 
+
+  auto run3 = engine4.getShortPath(0, 2, &bridgeMask, nullptr);
+
+  // Should take the now-free path (0-3-2)
+  assert(verifyPath(g4, run3.first, {0, 3, 2}));
+  assert(run3.second == 0.0f);
 
   std::cout << "-> Passed." << std::endl;
 

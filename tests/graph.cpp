@@ -1,4 +1,4 @@
-#include "tests.hpp"
+#include "Tests.hpp"
 
 static void testConstructionAndBasics() {
   std::cout << "[Test] Construction and Basics...";

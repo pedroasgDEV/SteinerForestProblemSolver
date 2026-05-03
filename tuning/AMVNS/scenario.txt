@@ -1,0 +1,5 @@
+maxExperiments = 500           # 500 é mais que suficiente para tunar parâmetros inteiros
+parameterFile = "parameters.txt"
+trainInstancesFile = "instances.txt"
+targetRunner = "./target-runner"
+parallel = 8                   # Adapte para o número de threads da sua CPU!
