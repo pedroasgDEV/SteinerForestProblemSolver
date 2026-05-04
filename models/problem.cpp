@@ -2,7 +2,7 @@
 
 SFPProblem::SFPProblem(std::shared_ptr<Graph> g,
                        const std::vector<std::pair<int, int>>& terminals)
-    : graph(g), terminals(terminals), instanceName("Manual") {
+    : graph(g), terminals(terminals), instanceName("Manual"), maxEdgeWeight(0.0) {
   if (!g) throw std::runtime_error("\tGraph pointer cannot be null");
   if (hasNegativeWeights(*g))
     throw std::runtime_error("\tGraph has negative weights.");
@@ -52,7 +52,7 @@ std::istream& operator>>(std::istream& in, SFPProblem& sf) {
         int source, target;
         float weight;
         in >> source >> target >> weight;
-        // Assume input 1-based, converte para 0-based
+        if (weight > sf.maxEdgeWeight) { sf.maxEdgeWeight = weight; }
         edgeList.push_back({source - 1, target - 1, weight});
       }
     }
@@ -62,7 +62,8 @@ std::istream& operator>>(std::istream& in, SFPProblem& sf) {
         int nTerminals;
         in >> nTerminals;
         sf.terminals.reserve(nTerminals);
-      } else if (token == "TP") {
+      } 
+      else if (token == "TP") {
         int source, target;
         in >> source >> target;
         sf.terminals.push_back({source - 1, target - 1});
