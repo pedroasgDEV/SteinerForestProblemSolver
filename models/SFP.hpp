@@ -24,12 +24,11 @@ struct SolutionEdge {
   int id;
   int reverse_id;  ///< Reverse Edge index
   double weight;   ///< Edge weight
-  mutable std::unordered_set<int>
-      pairs;  ///< list of pairs that the edge connects (int::ptr ->
-              ///< SFPSolution.pairs)
+  mutable std::unordered_set<int> pairs;  ///< list of pairs that the edge connects (int::ptr -> SFPSolution.pairs)
+  mutable double I_e; ///< Belly Index (Topological Inefficiency)
 
   SolutionEdge(const int id, const int reverse_id, const double weight)
-      : id(id), reverse_id(reverse_id), weight(weight) {
+      : id(id), reverse_id(reverse_id), weight(weight), I_e(0.0f) {
     if (reverse_id != -1 && id > reverse_id) {
       this->id = reverse_id;
       this->reverse_id = id;
@@ -47,9 +46,10 @@ struct SolutionEdge {
  * @brief Represents a pair that is part of the solution.
  */
 struct SolutionPair {
-  int source;       ///< Edge index
-  int target;       ///< Reverse Edge index
-  double pathCost;  ///< Actual path cost
+  int source;           ///< Edge index
+  int target;           ///< Reverse Edge index
+  double pathCost;      ///< Actual path cost
+  double previousCost;  ///< Last path cost
   mutable std::unordered_set<int>
       edges;  ///< list of edges that connect the pair (int::ptr -> Graph.edges)
   mutable std::vector<int>
@@ -60,6 +60,7 @@ struct SolutionPair {
       : source(source),
         target(target),
         pathCost(0.0f),
+        previousCost(0.0f),
         competing_pairs_sum(std::vector<int>(nTerms, 0)) {
     if (source > target) {
       this->source = target;
@@ -109,6 +110,17 @@ class SFPSolution {
   std::pair<int, int> getPairNodes(const int pair_id) const {
     return {pairs[pair_id].source, pairs[pair_id].target};
   }
+  void snapshotPairCost(const int pair_id) const {
+    if(pair_id >= 0 && pair_id < (int)pairs.size())
+        pairs[pair_id].previousCost = pairs[pair_id].pathCost;
+  }
+  double getPairPreviousCost(const int pair_id) const {
+    if(pair_id >= 0 && pair_id < (int)pairs.size())
+        return pairs[pair_id].previousCost;
+    return -1.0;
+  }
+  const SolutionPair& getPair(const int pair_id) const { return pairs[pair_id]; }
+
   int getNPairs() const { return pairs.size(); }
   std::vector<int> getCompetingPairs(const int pair_id) const {
     std::vector<int> temp;
@@ -146,6 +158,7 @@ class SFPProblem {
   std::shared_ptr<Graph> graph;
   std::vector<std::pair<int, int>> terminals;
   std::string instanceName;
+  double maxEdgeWeight;
 
  public:
   explicit SFPProblem(std::shared_ptr<Graph> g,
@@ -157,9 +170,8 @@ class SFPProblem {
   SFPSolution empty_solution() const { return SFPSolution(this); }
 
   const std::shared_ptr<Graph> getGraphPtr() const { return graph; }
-  const std::vector<std::pair<int, int>>& getTerminals() const {
-    return terminals;
-  }
+  double getMaxEdgeWeight() const { return maxEdgeWeight; }
+  const std::vector<std::pair<int, int>>& getTerminals() const { return terminals; }
   int getNEdges() const { return graph ? graph->nEdges : 0; }
   int getNNodes() const { return graph ? graph->nNodes : 0; }
   int getNTerminals() const { return terminals.size(); }
