@@ -1,9 +1,6 @@
-#include <algorithm>
-#include <utility>
-#include <cmath>
-#include <chrono>
-
 #include "Solver.hpp"
+
+#include <chrono>
 
 // Utility: Geodesic Bounding Box Calculator
 inline int AMVNS::calculateHopBox(SFPSolution& currentSol, const int source, const int target) const {

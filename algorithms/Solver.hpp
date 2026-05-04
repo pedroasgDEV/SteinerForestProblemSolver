@@ -2,16 +2,11 @@
 #define SOLVER_HPP
 
 #include <cstdint>
-#include <limits>
 #include <vector>
-#include <algorithm>
-#include <map>
 #include <random>
-#include <unordered_map>
 #include <type_traits>
 
 #include "../models/SFP.hpp"
-#include "../utils/DSU.hpp"
 #include "../utils/Dijkstra.hpp"
 
 /**

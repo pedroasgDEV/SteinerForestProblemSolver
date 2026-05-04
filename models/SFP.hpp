@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "../utils/DSU.hpp"
 #include "../utils/Graph.hpp"
 
 // Forward declarations

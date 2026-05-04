@@ -1,5 +1,7 @@
 #include "Solver.hpp"
-#include <utility>
+
+#include "../utils/DSU.hpp"
+#include <unordered_map>
 
 /**
  * @brief Agglutinates terminal sets that share vertices.

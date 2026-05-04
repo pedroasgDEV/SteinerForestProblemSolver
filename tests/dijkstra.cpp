@@ -1,4 +1,8 @@
 #include "Tests.hpp"
+
+#include "../utils/Dijkstra.hpp"
+
+#include <iostream>
 #include <memory>
 
 // Helper function to verify if the list of EDGE INDICES corresponds to the

@@ -1,5 +1,9 @@
 #include "Tests.hpp"
 
+#include "../models/SFP.hpp"
+
+#include <sstream>
+
 /**
  * @brief Helper to find an edge index given its source and target.
  */

@@ -1,5 +1,5 @@
 #include "SFP.hpp"
-#include <vector>
+#include "../utils/DSU.hpp"
 
 SFPSolution::SFPSolution(const SFPProblem* problem, std::vector<SolutionPair> init_pairs)
     : problem(problem), bitmask(std::vector<uint8_t>(problem->getNEdges(), 0)), currentCost(0.0f) { 
