@@ -1,0 +1,5 @@
+maxExperiments = 1000 
+parameterFile = "parameters.txt"
+trainInstancesFile = "instances.txt"
+targetRunner = "./target-runner"
+parallel = 8                   # Adapte para o número de threads da sua CPU!

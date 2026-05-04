@@ -1,0 +1,9 @@
+#!/bin/bash
+INSTANCE=$4
+
+shift 4
+PARAMS=$*
+
+OUTPUT=$(../../steiner_forest --IRACE --GRASP -f $INSTANCE -i 1 $PARAMS)
+
+echo "$OUTPUT"
