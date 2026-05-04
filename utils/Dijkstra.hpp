@@ -14,14 +14,16 @@
  * high performance.
  * * This class uses persistent memory and a token-based system (Lazy Reset)
  * to avoid expensive O(N) memory allocations and initializations on every call.
+ * * Updated with Hop-bounded (Spatially Delimited) execution capabilities.
  */
 class DijkstraEngine {
  private:
   const std::shared_ptr<Graph> graph;
   std::vector<float> dist;
+  std::vector<int> hopsCount; 
   std::vector<unsigned long long int> visitedToken;
-  std::vector<std::pair<int, int>> parent;  // Stores the predecessor {node, edge} of each node for path reconstruction.
-  unsigned long long int currentToken;  // The "timestamp" or ID of the current Dijkstra execution.
+  std::vector<std::pair<int, int>> parent;  
+  unsigned long long int currentToken;  
 
   using Pii = std::pair<float, int>;
   std::vector<Pii> pq;
@@ -29,35 +31,37 @@ class DijkstraEngine {
  public:
   /**
    * @brief Constructor. Allocates memory once.
-   * @param nodes Total number of nodes in the graph  
+   * @param graph The reference graph
    */
   DijkstraEngine(const std::shared_ptr<Graph> graph) : graph(graph), currentToken(0){
-    // Resize vectors once to prevent heap fragmentation during execution.
     dist.resize(graph->nNodes);
     parent.resize(graph->nNodes);
     visitedToken.resize(graph->nNodes, 0);
+    hopsCount.resize(graph->nNodes, 0); 
     pq.reserve(graph->nEdges);
   }
 
   /**
    * @brief Computes the shortest path between source and target.
-   * @param graph The reference graph (CSR).
    * @param source The starting node ID.
    * @param target The destination node ID.
    * @param bridges Optional bitmask of edges with 0 cost.
    * @param ditchs Optional bitmask of edges with infinite cost (ignored).
+   * @param maxHops Geodesic expansion limit. -1 disables the limit (Default).
    * @return A pair containing the path and the cost.
    */
   std::pair<std::vector<int>, float> getShortPath(
       const int source, const int target,
       const std::vector<uint8_t>* bridges = nullptr,
-      const std::vector<uint8_t>* ditchs = nullptr) {
+      const std::vector<uint8_t>* ditchs = nullptr,
+      const int maxHops = -1) { 
       
-    currentToken++;  // Increment the global token.
+    currentToken++;  
     
     pq.clear();
 
     dist[source] = 0.0f;
+    hopsCount[source] = 0;
     visitedToken[source] = currentToken; 
     parent[source] = {-1, -1};
     pq.push_back({0.0f, source});
@@ -80,6 +84,9 @@ class DijkstraEngine {
         break;
       }
 
+      // Ignore if the constraint is active (!= -1) and reach the radius limit, 
+      if (maxHops != -1 && hopsCount[u] >= maxHops) continue; 
+
       for (int i = ptrs[u]; i < ptrs[u + 1]; ++i) {
         if (ditchs && (*ditchs)[i]) continue;
 
@@ -99,6 +106,7 @@ class DijkstraEngine {
           dist[v] = newDist;
           parent[v] = {u, i};
           visitedToken[v] = currentToken;
+          hopsCount[v] = hopsCount[u] + 1;
           pq.push_back({newDist, v});
           std::push_heap(pq.begin(), pq.end(), std::greater<Pii>());
         }
