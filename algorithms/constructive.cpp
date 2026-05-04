@@ -141,3 +141,26 @@ SFPSolution GRASPConstructiveHeuristic::generate(const SFPProblem* problem, std:
 
   return solution;
 }
+
+SFPSolution SimpleConstructiveHeuristic::generate(const SFPProblem* problem, std::mt19937& rng) {
+
+  if(!dijkstra) dijkstra = std::make_shared<DijkstraEngine>(problem->getGraphPtr());
+    
+  // Generate Pairs
+  auto groups = preprocessTerminalGroups(problem->getNNodes(), problem->getTerminals());
+  auto rawPairs = generatePairs(groups, problem->getTerminals().size(), rng);
+  
+  std::vector<SolutionPair> dictPairs = rawPairs;
+  SFPSolution solution(problem, std::move(rawPairs));
+
+  for (int i = 0; i < static_cast<int>(dictPairs.size()); ++i) {
+    // Find a path to connect the pair;
+    auto result = dijkstra->getShortPath(dictPairs[i].source, dictPairs[i].target, solution.getBitmask());
+    
+    // Add the path to the solution
+    SFPMove move(&solution, MoveType::CNCT_PAIR, i, std::move(result.first));
+    move.apply();
+  }
+
+  return solution;
+}

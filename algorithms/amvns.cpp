@@ -1,30 +1,38 @@
 #include <algorithm>
 #include <utility>
+#include <cmath>
+#include <chrono>
 
 #include "Solver.hpp"
 
+// Utility: Geodesic Bounding Box Calculator
+inline int AMVNS::calculateHopBox(SFPSolution& currentSol, const int source, const int target) const {
+    return 20; 
+}
+
 /**
- * @brief Diversification Phase (VNS on BAD)
- * @return True if the topology was improved, False otherwise.
+ * @brief Diversification Phase (Macro Shockwave)
  */
 bool AMVNS::diversification(SFPSolution& currentSol, std::vector<EdgeState>& status, 
-                            std::vector<uint8_t>& ditchs, const std::vector<SolutionEdge>& badCandidates, 
-                            const int delta) const {
+                            std::vector<uint8_t>& ditchs, const double W_max) const {
   
-  // Setup Perturbation Gears (k_steps) for VNS
-  int N_bad = badCandidates.size();
-  if(N_bad == 0) return false;
+  std::vector<const SolutionEdge*> unstable_ptrs;
+  for (const auto& edge : currentSol.getEdges())
+      if (status[edge.id] == EdgeState::UNSTABLE) {
+          edge.I_e = edge.weight / (W_max * std::sqrt(std::max((size_t)1, edge.pairs.size()))); 
+          unstable_ptrs.push_back(&edge);
+      }
 
-  int k1 = std::max(2, (int)(N_bad * 0.05));
-  int k2 = std::max(k1 + 1, (int)(N_bad * 0.10));
-  int k3 = std::max(k2 + 1, (int)(N_bad * 0.15));
-  int k4 = std::max(k3 + 1, (int)(N_bad * 0.20));
-  int k_steps[] = {1, k1, k2, k3, k4};
+  int N_unstable = unstable_ptrs.size();
+  if(N_unstable == 0) return false;
+
+  // Prioritizes Top-Down attack on the worst inefficiencies (bellies)
+  std::sort(unstable_ptrs.begin(), unstable_ptrs.end(), 
+      [](const SolutionEdge* a, const SolutionEdge* b) { return a->I_e > b->I_e; });
+
+  int k_steps[] = {1, std::max(2, (int)(N_unstable * 0.05)), std::max(3, (int)(N_unstable * 0.10)), 
+                   std::max(4, (int)(N_unstable * 0.15)), std::max(5, (int)(N_unstable * 0.20))};
   
-  // Shuffle the VNS targets to prevent search bias and cycling
-  std::vector<SolutionEdge> shuffledEdges = badCandidates;
-  std::shuffle(shuffledEdges.begin(), shuffledEdges.end(), rng);
-
   SFPNeighborhood destroy;
   destroy.moves.reserve(currentSol.getNPairs());
   std::unordered_set<int> affectedPairs;
@@ -33,225 +41,189 @@ bool AMVNS::diversification(SFPSolution& currentSol, std::vector<EdgeState>& sta
   pairsToRepair.reserve(currentSol.getNPairs());
   SFPNeighborhood repair;
   repair.moves.reserve(currentSol.getNPairs());
-  std::vector<int> goodEdges;
-  goodEdges.reserve(currentSol.getNEdges() / 10);
   
   for (int k : k_steps) {
-    if (k > N_bad) k = N_bad;
-    
-    // k=1 explores ALL bad edges. k>1 explores 10 random blocks.
-    int attempts = (k == 1) ? N_bad : std::min(10, N_bad);
+    if (k > N_unstable) k = N_unstable;
 
-    std::shuffle(shuffledEdges.begin(), shuffledEdges.end(), rng);
-    
-    for (int att = 0; att < attempts; att++) {
-      double originalCost = currentSol.getCurrentCost();
+    double originalCost = currentSol.getCurrentCost();
+    destroy.moves.clear();
+    affectedPairs.clear();
+    repair.moves.clear();
+    pairsToRepair.clear();
 
-      destroy.moves.clear();
-      affectedPairs.clear();
-      repair.moves.clear();
-      pairsToRepair.clear();
-      goodEdges.clear();
+    std::vector<const SolutionEdge*> target_block;
+    if (k == 1) target_block.push_back(unstable_ptrs[0]);
+    else {
+        std::uniform_int_distribution<> dis(0, std::max(0, N_unstable - k) / 2); // Skew towards the first half
+        int start_idx = dis(rng);
+        for(int i = 0; i < k; ++i) target_block.push_back(unstable_ptrs[start_idx + i]);
+    }
 
-      // Swap the target edge to the front for k=1 (O(1) testing), shuffle for k>1
-      if (k > 1) std::shuffle(shuffledEdges.begin(), shuffledEdges.end(), rng);
-      else std::swap(shuffledEdges[0], shuffledEdges[att]);
+    // Phase: Destroy with Dynamic Delta
+    for (const auto* edgeToDrop : target_block) {
+        if (!currentSol.isEdgeActive(edgeToDrop->id)) continue;
 
-      // Destroy Phase
-      for (int i = 0; i < k; i++) {
-        const auto& edgeToDrop = shuffledEdges[i];
-        if (!currentSol.isEdgeActive(edgeToDrop.id)) continue;
+        ditchs[edgeToDrop->id] = 1;
+        if (edgeToDrop->reverse_id != -1) ditchs[edgeToDrop->reverse_id] = 1;
 
-        ditchs[edgeToDrop.id] = 1;
-        if (edgeToDrop.reverse_id != -1) ditchs[edgeToDrop.reverse_id] = 1;
+        int adaptive_delta = std::max(1, (int) std::ceil(edgeToDrop->I_e * currentSol.getEdgePairs(*edgeToDrop).size()));
 
-        // LEVEL 1 (The Epicenter): Pairs that pass exactly through the removed edge.
         std::vector<int> currentWave;
-        for (int pair_id : currentSol.getEdgePairs(edgeToDrop))
-          if (affectedPairs.insert(pair_id).second) {
-            currentWave.push_back(pair_id);
-            destroy.moves.push_back({&currentSol, MoveType::DSCNCT_PAIR, pair_id, currentSol.getPairEdges(pair_id)});
-          }
+        for (int pair_id : currentSol.getEdgePairs(*edgeToDrop))
+            if (affectedPairs.insert(pair_id).second) {
+                currentWave.push_back(pair_id);
+                currentSol.snapshotPairCost(pair_id);
+                destroy.moves.push_back({&currentSol, MoveType::DSCNCT_PAIR, pair_id, currentSol.getPairEdges(pair_id)});
+            }
         
-        // LEVELS 2 TO DELTA (The Shock Wave): Cascading Competitors.
-        for (int d = 2; d <= delta; ++d) {
-          std::vector<int> nextWave;
-          
-          // For each pair affected in the previous level, attack its competitors.
-          for (int p : currentWave) 
-            for (int comp : currentSol.getCompetingPairs(p)) 
-              if (affectedPairs.insert(comp).second) {
-                nextWave.push_back(comp);
-                destroy.moves.push_back({&currentSol, MoveType::DSCNCT_PAIR, comp, currentSol.getPairEdges(comp)});
-              }
-          
-          // If the wave hasn't encountered any new competitors, abort early.
-          if (nextWave.empty()) break; 
-          currentWave = std::move(nextWave);
+        for (int d = 2; d <= adaptive_delta; ++d) {
+            std::vector<int> nextWave;
+            for (int p : currentWave) 
+                for (int comp : currentSol.getCompetingPairs(p)) 
+                    if (affectedPairs.insert(comp).second) {
+                        currentSol.snapshotPairCost(comp);
+                        nextWave.push_back(comp);
+                        destroy.moves.push_back({&currentSol, MoveType::DSCNCT_PAIR, comp, currentSol.getPairEdges(comp)});
+                    }
+            if (nextWave.empty()) break; 
+            currentWave = std::move(nextWave);
         }
-      }
+    }
 
-      destroy.apply();
+    destroy.apply();
+    bool feasible = true;
+    pairsToRepair.assign(affectedPairs.begin(), affectedPairs.end());
+    
+    // Sort pairs Top-Down (Most expensive first)
+    std::sort(pairsToRepair.begin(), pairsToRepair.end(), 
+        [&currentSol](int a, int b) { return currentSol.getPairPreviousCost(a) > currentSol.getPairPreviousCost(b); });
 
-      bool feasible = true;
-      pairsToRepair.assign(affectedPairs.begin(), affectedPairs.end());
-      std::shuffle(pairsToRepair.begin(), pairsToRepair.end(), rng);
-
-      for (int pair : pairsToRepair) {
+    for (int pair : pairsToRepair) {
         auto [source, target] = currentSol.getPairNodes(pair);
-        auto result = dijkstra->getShortPath(source, target, currentSol.getBitmask(), &ditchs);
+        int hopLimit = calculateHopBox(currentSol, source, target);
         
-        if (result.second < 0) {
-          feasible = false;
-          break;
-        }
-
-        // Track strictly new edges injected by the repair phase
-        for (int newEdge : result.first)
-          if (!currentSol.isEdgeActive(newEdge)) goodEdges.push_back(newEdge);
+        // Hop-bounded Dijkstra
+        auto result = dijkstra->getShortPath(source, target, currentSol.getBitmask(), &ditchs, hopLimit);
+        
+        if (result.second < 0) { feasible = false; break; }
 
         repair.addMoveApplying({&currentSol, MoveType::CNCT_PAIR, pair, std::move(result.first)});
         
-        if (currentSol.getCurrentCost() >= originalCost - 1e-4) {
-          feasible = false;
-          break;
-        }
-      }
+        if (currentSol.getCurrentCost() >= originalCost - 1e-4) { feasible = false; break; }
+    }
 
-      double newCost = currentSol.getCurrentCost();
+    // Clean Ditchs
+    for (const auto* e : target_block) {
+        ditchs[e->id] = 0;
+        if (e->reverse_id != -1) ditchs[e->reverse_id] = 0;
+    }
 
-      for (int i = 0; i < k; i++) {
-        ditchs[shuffledEdges[i].id] = 0;
-        if (shuffledEdges[i].reverse_id != -1) ditchs[shuffledEdges[i].reverse_id] = 0;
-      }
-
-      // The topology evolved. Mark new shortcuts as GOOD
-      if (feasible && newCost < originalCost - 1e-4) {
-        for (int newEdge : goodEdges) status[newEdge] = EdgeState::GOOD;
-        if (k == 1) std::swap(shuffledEdges[0], shuffledEdges[att]); // Restore swap
-        return true; 
-      } 
-      else {
-        // Failure. Undo the changes
+    if (feasible && currentSol.getCurrentCost() < originalCost - 1e-4) return true; 
+    else {
         repair.undo();
         destroy.undo();
         
-        // Blame Assignment
-        if (k == 1) status[shuffledEdges[0].id] = EdgeState::UGLY;
-      }
-
-      if (k == 1) std::swap(shuffledEdges[0], shuffledEdges[att]);
+        // Probabilistic Relegation only on k=1 surgery
+        if (k == 1) {
+            std::uniform_real_distribution<double> dist_prob(0.0, 1.0);
+            // Macro failed, demote to micro
+            if (dist_prob(rng) < (1.0 - target_block[0]->I_e))
+                status[target_block[0]->id] = EdgeState::RESILIENT; 
+        }
     }
   }
   return false;
 }
 
 /**
- * @brief Intensification Phase (Local Search on UGLY)
+ * @brief Intensification Phase (Micro Refinement with Strict Eviction)
  */
 void AMVNS::intensification(SFPSolution& currentSol, std::vector<EdgeState>& status, 
-                            std::vector<uint8_t>& ditchs, const int delta) const {
-  bool ugliesImproved = true;
-  std::vector<SolutionEdge> uglyCandidates;
-  uglyCandidates.reserve(currentSol.getNEdges());
+                            std::vector<uint8_t>& ditchs, const double I_mean) const {
+  bool improved = true;
+  std::vector<const SolutionEdge*> resilient_ptrs;
   std::unordered_set<int> affectedPairs;
-  affectedPairs.reserve(currentSol.getNPairs());
   SFPNeighborhood destroy;
-  destroy.moves.reserve(currentSol.getNPairs());
   SFPNeighborhood repair;
-  repair.moves.reserve(currentSol.getNPairs());
   std::vector<int> pairsToRepair;
-  pairsToRepair.reserve(currentSol.getNPairs());
-  std::vector<int> goodEdges;
-  goodEdges.reserve(currentSol.getNEdges() / 10);
 
-  while (ugliesImproved) {
-    ugliesImproved = false;
-    uglyCandidates.clear();
+  while (improved) {
+    improved = false;
+    resilient_ptrs.clear();
 
     for (const auto& edge : currentSol.getEdges())
-      if (status[edge.id] == EdgeState::UGLY) uglyCandidates.push_back(edge);
+      if (status[edge.id] == EdgeState::RESILIENT) resilient_ptrs.push_back(&edge);
     
-    // Shuffle the UGLY candidates to break cycling
-    std::shuffle(uglyCandidates.begin(), uglyCandidates.end(), rng);
+    std::shuffle(resilient_ptrs.begin(), resilient_ptrs.end(), rng);
 
-    for (const auto& edgeToDrop : uglyCandidates) {
-      if (!currentSol.isEdgeActive(edgeToDrop.id)) continue;
+    for (const auto* edgeToDrop : resilient_ptrs) {
+      if (!currentSol.isEdgeActive(edgeToDrop->id)) continue;
       double originalCost = currentSol.getCurrentCost();
 
-      ditchs[edgeToDrop.id] = 1;
-      if (edgeToDrop.reverse_id != -1) ditchs[edgeToDrop.reverse_id] = 1;
+      ditchs[edgeToDrop->id] = 1;
+      if (edgeToDrop->reverse_id != -1) ditchs[edgeToDrop->reverse_id] = 1;
 
-      affectedPairs.clear();
-      destroy.moves.clear();
-      pairsToRepair.clear();
+      affectedPairs.clear(); 
+      destroy.moves.clear(); 
+      pairsToRepair.clear(); 
       repair.moves.clear();
-      goodEdges.clear();
 
-      // LEVEL 1 (The Epicenter): Pairs that pass exactly through the removed edge.
+      int adaptive_delta = std::max(1, (int)std::ceil(edgeToDrop->I_e * currentSol.getEdgePairs(*edgeToDrop).size()));
+
       std::vector<int> currentWave;
-      for (int pair_id : currentSol.getEdgePairs(edgeToDrop))
+      for (int pair_id : currentSol.getEdgePairs(*edgeToDrop))
         if (affectedPairs.insert(pair_id).second) {
           destroy.moves.push_back({&currentSol, MoveType::DSCNCT_PAIR, pair_id, currentSol.getPairEdges(pair_id)});
           currentWave.push_back(pair_id);
+          currentSol.snapshotPairCost(pair_id);
         }
 
-      // LEVELS 2 TO DELTA (The Shock Wave): Cascading Competitors.
-      for (int d = 2; d <= delta; ++d) {
+      for (int d = 2; d <= adaptive_delta; ++d) {
         std::vector<int> nextWave;
         for (int p : currentWave)
           for (int comp : currentSol.getCompetingPairs(p))
             if (affectedPairs.insert(comp).second) {
               destroy.moves.push_back({&currentSol, MoveType::DSCNCT_PAIR, comp, currentSol.getPairEdges(comp)});
               nextWave.push_back(comp);
+              currentSol.snapshotPairCost(comp);
             }
-          
         if (nextWave.empty()) break; 
         currentWave = std::move(nextWave);
       }
 
       destroy.apply();
+
       bool feasible = true;
       pairsToRepair.assign(affectedPairs.begin(), affectedPairs.end());
-      std::shuffle(pairsToRepair.begin(), pairsToRepair.end(), rng);
+      std::sort(pairsToRepair.begin(), pairsToRepair.end(), 
+        [&currentSol](int a, int b) { return currentSol.getPairPreviousCost(a) > currentSol.getPairPreviousCost(b); });
       
       for (int pair : pairsToRepair) {
         auto [source, target] = currentSol.getPairNodes(pair);
-        auto result = dijkstra->getShortPath(source, target, currentSol.getBitmask(), &ditchs);
+        int hopLimit = calculateHopBox(currentSol, source, target);
+        auto result = dijkstra->getShortPath(source, target, currentSol.getBitmask(), &ditchs, hopLimit);
 
-        if (result.second < 0) {
-          feasible = false;
-          break;
-        }
-
-        for(auto newEdge : result.first) 
-          if (!currentSol.isEdgeActive(newEdge)) goodEdges.push_back(newEdge);
-
-
-        repair.addMoveApplying({&currentSol, MoveType::CNCT_PAIR, pair, std::move(result.first)});
+        if (result.second < 0) { feasible = false; break; }
         
-        if (currentSol.getCurrentCost() >= originalCost - 1e-4) {
-          feasible = false;
-          break;
-        }
+        repair.addMoveApplying({&currentSol, MoveType::CNCT_PAIR, pair, std::move(result.first)});
+
+        if (currentSol.getCurrentCost() >= originalCost - 1e-4) { feasible = false; break; }
       }
 
-      ditchs[edgeToDrop.id] = 0;
-      if (edgeToDrop.reverse_id != -1) ditchs[edgeToDrop.reverse_id] = 0;
+      ditchs[edgeToDrop->id] = 0;
+      if (edgeToDrop->reverse_id != -1) ditchs[edgeToDrop->reverse_id] = 0;
 
-      // The edge is no longer ugly, the topology has changed
       if (feasible && currentSol.getCurrentCost() < originalCost - 1e-4) {
-        ugliesImproved = true;
-
-        for (int newEdge : goodEdges)
-          status[newEdge] = EdgeState::GOOD;
-        
+        improved = true;
         break; 
       } 
-      // Edge remains UGLY. Failure, undo the changes
       else {
         repair.undo();
         destroy.undo();
+        
+        // Final Memory Sieve (Eviction Rule)
+        if (edgeToDrop->I_e < I_mean) status[edgeToDrop->id] = EdgeState::TABU;
+        else status[edgeToDrop->id] = EdgeState::UNSTABLE;
       }
     }  
   }  
@@ -259,63 +231,78 @@ void AMVNS::intensification(SFPSolution& currentSol, std::vector<EdgeState>& sta
 
 /**
  * @brief Executes the Adaptive Memory Variable Neighborhood Search (AM-VNS).
- * * Strategy: Iterated Local Search with State Partitioning (BAD, GOOD, UGLY).
- * 1. Generates an initial solution via GRASP.
- * 2. Diversification: Applies VNS on the 'BAD' edge set to break out of local optima.
- * 3. State Transition: Failed single-edge removals are tagged as 'UGLY'.
- * 4. Intensification: If VNS finds an improvement, it triggers a rigorous
- *    First-Improvement Local Search strictly on the 'UGLY' set.
- * 5. Memory Update: 'GOOD' edges are promoted to 'BAD' when the 'BAD' set is depleted.
  */
 SFPSolution AMVNS::solve() const {
   
-  SFPSolution globalBest = problem->empty_solution();
+  SFPSolution globalBest = constructive->generate(problem, rng);
+  firstCost = globalBest.getCurrentCost();
+  
+  SFPSolution currentSol = problem->empty_solution();
+  currentSol = globalBest;
+  
   int nEdgesGraph = problem->getNEdges();   
   std::vector<uint8_t> ditchs(nEdgesGraph, 0);
+  std::vector<EdgeState> status(nEdgesGraph, EdgeState::UNSTABLE);
 
-  for (int iter = 0; iter < maxIterations; ++iter) {
+  double W_max = problem->getMaxEdgeWeight();
+  if(W_max == 0.0) W_max = 1.0; // Failsafe
 
-    SFPSolution currentSol = constructive->generate(problem, rng);
-    if(iter == 0) firstCost = currentSol.getCurrentCost();
+  int stagnant_cycles = 0;
+  auto start_time = std::chrono::steady_clock::now();
+  std::uniform_real_distribution<double> dist_prob(0.0, 1.0);
 
-    std::vector<EdgeState> status(nEdgesGraph, EdgeState::BAD);
-    for (const auto& edge : currentSol.getEdges()) status[edge.id] = EdgeState::BAD;
+  while (true) {
+    // Time and Stagnation Stop
+    auto current_time = std::chrono::steady_clock::now();
+    int elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(current_time - start_time).count();
     
-    bool runSearch = true;
-    std::vector<SolutionEdge> badCandidates; 
-    badCandidates.reserve(currentSol.getNEdges());
+    bool exceededTime = (timeLimitSeconds > 0) && (elapsed_seconds >= timeLimitSeconds);
+    bool exceededStagnation = (stagnant_cycles >= maxStagnationCycles);
 
-    while (runSearch) {
-      badCandidates.clear();
+    if (exceededTime || exceededStagnation) break;
 
-      for (const auto& edge : currentSol.getEdges())
-        if (status[edge.id] == EdgeState::BAD) badCandidates.push_back(edge);
+    double previous_cycle_cost = currentSol.getCurrentCost();
 
-      // Memory Promotion (GOOD -> BAD)
-      if (badCandidates.empty()) {
-        bool hasGood = false;
-        for (const auto& edge : currentSol.getEdges())
-          if (status[edge.id] == EdgeState::GOOD) {
-            status[edge.id] = EdgeState::BAD;
-            badCandidates.push_back(edge);
-            hasGood = true;
-          }
-        
-        // Deep Local Optimum Reached: If there is nothing GOOD left to test, end the GBU for this iteration.
-        if (!hasGood) {
-          runSearch = false;
-          break;
-        }
-        // Restart the while(runSearch) now that BAD has been replenished with the former heroes
-        continue; 
-      }
-
-      bool improvedInBad = diversification(currentSol, status, ditchs, badCandidates, delta1);
-      
-      if (improvedInBad) intensification(currentSol, status, ditchs, delta2);
-
-      if (iter == 0 || currentSol.getCurrentCost() < globalBest.getCurrentCost()) globalBest = currentSol;
+    // Autonomous Thermometer & Global Rescue
+    int count_resilient = 0, count_total = 0;
+    for(const auto& edge : currentSol.getEdges()) {
+        count_total++;
+        if(status[edge.id] == EdgeState::RESILIENT) count_resilient++;
     }
+    
+    double S_current = (double)count_resilient / std::max(1, count_total);
+
+    for (const auto& edge : currentSol.getEdges())
+        if(status[edge.id] == EdgeState::RESILIENT && dist_prob(rng) < S_current)
+            status[edge.id] = EdgeState::UNSTABLE;
+
+    // Active Amnesia (Soft-Tabu)
+    double decay_factor = 0.05;
+    for (const auto& edge : currentSol.getEdges()) 
+        if(status[edge.id] == EdgeState::TABU && dist_prob(rng) < (S_current * decay_factor))
+            status[edge.id] = EdgeState::UNSTABLE;
+
+    // Dynamic Cutoff (I_mean)
+    double sum_I_e = 0.0;
+    int count_unstable = 0;
+    for (const auto& edge : currentSol.getEdges())
+        if (status[edge.id] == EdgeState::UNSTABLE) {
+            sum_I_e += edge.weight / (W_max * std::sqrt(std::max((size_t)1, edge.pairs.size())));
+            count_unstable++;
+        }
+
+    double I_mean = sum_I_e / std::max(1, count_unstable);
+
+    bool macro_improvement = diversification(currentSol, status, ditchs, W_max);
+    
+    if (macro_improvement) intensification(currentSol, status, ditchs, I_mean);
+
+    // Global Update & Graceful Degradation
+    if (currentSol.getCurrentCost() < globalBest.getCurrentCost()) globalBest = currentSol;
+
+    double fractional_gap = (previous_cycle_cost - currentSol.getCurrentCost()) / previous_cycle_cost;
+    if (fractional_gap <= 1e-5) stagnant_cycles++;
+    else stagnant_cycles = 0; 
   }
 
   return globalBest;

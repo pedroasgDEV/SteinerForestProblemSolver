@@ -65,6 +65,22 @@ class GRASPConstructiveHeuristic : public ConstructiveStrategy {
 };
 
 /**
+ * @class SimpleConstructiveHeuristic
+ */
+class SimpleConstructiveHeuristic : public ConstructiveStrategy {
+ private:
+  float alpha;
+  mutable std::shared_ptr<DijkstraEngine> dijkstra;
+
+ public:
+  SimpleConstructiveHeuristic(std::shared_ptr<DijkstraEngine> externalDijkstra = nullptr, const float alpha = 1.0f) 
+      : alpha(alpha), dijkstra(externalDijkstra) {}
+
+  SFPSolution generate(const SFPProblem* problem, std::mt19937& rng) override;
+  std::string getName() const override { return "GRASP" + std::to_string(alpha); }
+};
+
+/**
  * @class GRASPLocalSearch
  */
 class GRASPLocalSearch : public LocalSearchStrategy {
@@ -143,38 +159,39 @@ class Metaheuristics : public SolverStrategy {
 
 
 /*
- * @class AM-VNS
- * @brief A Hybrid solver based on Adaptive Memory Variable Neighborhood Search
+ * @class ParameterFreeAMVNS
+ * @brief A Hybrid solver based on Feature-Guided Adaptive Memory Variable Neighborhood Search
  */
 class AMVNS : public SolverStrategy {
  private:
   
-  enum class EdgeState { GOOD, BAD, UGLY };
+  enum class EdgeState { UNSTABLE, RESILIENT, TABU };
   
   const SFPProblem* problem;
   mutable double firstCost;
-  int maxIterations;
+  int timeLimitSeconds; 
+  int maxStagnationCycles;
   float alpha;
-  int delta1, delta2;
-  std::unique_ptr<GRASPConstructiveHeuristic> constructive;
+  std::unique_ptr<SimpleConstructiveHeuristic> constructive;
   mutable std::shared_ptr<DijkstraEngine> dijkstra;
   mutable std::mt19937 rng;
 
-  bool diversification(SFPSolution& currentSol, std::vector<EdgeState>& status, std::vector<uint8_t>& ditchs, const std::vector<SolutionEdge>& badCandidates, const int delta = 1) const;
-  void intensification(SFPSolution& currentSol, std::vector<EdgeState>& status, std::vector<uint8_t>& ditchs, const int delta = 1) const;
+  bool diversification(SFPSolution& currentSol, std::vector<EdgeState>& status, std::vector<uint8_t>& ditchs, const double W_max) const;
+  void intensification(SFPSolution& currentSol, std::vector<EdgeState>& status, std::vector<uint8_t>& ditchs, const double I_media) const;
+  int calculateHopBox(SFPSolution& currentSol, const int source, const int target) const;
 
  public:
-  AMVNS(const SFPProblem* problem, const int maxIter = 1, const float alpha = 1.0f, const int delta1 = 1, const int delta2 = 1) 
-      : problem(problem), firstCost(-1.0f), maxIterations(maxIter), alpha(alpha), delta1(delta1), delta2(delta2){
+  AMVNS(const SFPProblem* problem, const int timeLimitSec = -1, const int maxStagnation = 50, const float alpha = 1.0f) 
+      : problem(problem), firstCost(-1.0f), timeLimitSeconds(timeLimitSec), maxStagnationCycles(maxStagnation), alpha(alpha){
      std::random_device rd;
      rng.seed(rd());
      dijkstra = std::make_shared<DijkstraEngine>(problem->getGraphPtr()); 
-     constructive = std::make_unique<GRASPConstructiveHeuristic>(dijkstra, alpha); 
+     constructive = std::make_unique<SimpleConstructiveHeuristic>(dijkstra, alpha); 
   }
 
   SFPSolution solve() const override;
   double getFirstCost() const override { return firstCost; }
-  std::string getName() const override { return "AM-VNS"; }
+  std::string getName() const override { return "AM-VNS Parameter-Free"; }
 };
 
 #endif
