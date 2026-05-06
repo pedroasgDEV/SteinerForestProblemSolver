@@ -1,5 +1,9 @@
 #include "Tests.hpp"
 
+#include "../utils/Graph.hpp"
+
+#include <iostream>
+
 static void testConstructionAndBasics() {
   std::cout << "[Test] Construction and Basics...";
 

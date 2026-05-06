@@ -1,5 +1,9 @@
 #include "Tests.hpp"
 
+#include "../models/SFP.hpp"
+
+#include <sstream>
+
 /**
  * @brief Helper to find an edge index given its source and target.
  */
@@ -57,15 +61,15 @@ void testConnectAndDisconnectMoves() {
   // 1. Test the Connection Apply
   connectMove.apply();
   assert(sol.getCurrentCost() == 30.0f);
-  assert(sol.getEdges().size() == 2);
-  assert(sol.getPairEdges(pair_id).size() == 2);
+  assert(sol.getNEdges() == 2);
+  assert(sol.getPairEdges(pair_id)->size() == 2);
   assert(sol.getPairCost(pair_id) == 30.0f);
 
   // 2. Test the Connection Undo
   connectMove.undo();
   assert(sol.getCurrentCost() == 0.0f);
-  assert(sol.getEdges().size() == 0);
-  assert(sol.getPairEdges(pair_id).size() == 0);
+  assert(sol.getNEdges() == 0);
+  assert(sol.getPairEdges(pair_id)->size() == 0);
   assert(sol.getPairCost(pair_id) == 0.0f);
 
   // 3. Apply again so we can test the Disconnection
@@ -76,15 +80,15 @@ void testConnectAndDisconnectMoves() {
   // 4. Test the Disconnection
   disconnectMove.apply();
   assert(sol.getCurrentCost() == 0.0f);
-  assert(sol.getEdges().size() == 0);
-  assert(sol.getPairEdges(pair_id).size() == 0);
+  assert(sol.getNEdges() == 0);
+  assert(sol.getPairEdges(pair_id)->size() == 0);
   assert(sol.getPairCost(pair_id) == 0.0f);
 
   // 5. Test the Disconnection Undo
   disconnectMove.undo();
   assert(sol.getCurrentCost() == 30.0f);
-  assert(sol.getEdges().size() == 2);
-  assert(sol.getPairEdges(pair_id).size() == 2);
+  assert(sol.getNEdges() == 2);
+  assert(sol.getPairEdges(pair_id)->size() == 2);
   assert(sol.getPairCost(pair_id) == 30.0f);
 
   std::cout << " -> Passed." << std::endl;
@@ -113,12 +117,12 @@ void testNeighborhoods() {
 
   // Test Batch Application
   assert(sol.getCurrentCost() == 15.0f); // 5.0 + 10.0
-  assert(sol.getEdges().size() == 2);
+  assert(sol.getNEdges() == 2);
 
   // Test Batch Undo
   neigh.undo();
   assert(sol.getCurrentCost() == 0.0f);
-  assert(sol.getEdges().size() == 0);
+  assert(sol.getNEdges() == 0);
 
   std::cout << " -> Passed." << std::endl;
 }

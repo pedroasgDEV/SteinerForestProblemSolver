@@ -9,7 +9,6 @@ set(SOURCES
 
     "algorithms/constructive.cpp"
     "algorithms/localSearch.cpp"
-    "algorithms/amvns.cpp"
     
     "models/problem.cpp"
     "models/solution.cpp"
@@ -18,6 +17,7 @@ set(SOURCES
     "tests/graph.cpp"
     "tests/dijkstra.cpp"
     "tests/sfp.cpp"
+    "tests/biddijkstra.cpp"
 )
 
 add_executable(steiner_forest ${SOURCES})

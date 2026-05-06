@@ -1,88 +1,66 @@
 #include <algorithm>
+#include <utility>
 #include <vector>
+
 #include "Solver.hpp"
 
-/**
- * @brief Implementation of the Local Search Phase for GRASP.
- * * Strategy: "Destroy and Repair"
- * 1. Temporarily removes an edge from the current solution (Weight = INF).
- * 2. Identifies which terminal pairs became disconnected (including competitors).
- * 3. Tries to reconnect them using the shortest path in the modified graph.
- * 4. If the reconstructed solution is cheaper, the move is accepted.
- */
-bool GRASPLocalSearch::optimize(SFPSolution* solution, std::mt19937& rng) {
+bool GRASPLocalSearch::optimize(SFPSolution* solution) {
   if (!dijkstra)
-    dijkstra = std::make_shared<DijkstraEngine>(solution->getProblem()->getGraphPtr());
+    dijkstra = std::make_shared<BidirectionalDijkstraEngine>(
+        solution->getProblem()->getGraphPtr());
 
   int nEdges = solution->getProblem()->getNEdges();
   std::vector<uint8_t> ditchs(nEdges, 0);
-  
-  std::vector<SolutionEdge> edgesToTest = solution->getEdges();
-  std::shuffle(edgesToTest.begin(), edgesToTest.end(), rng);
 
-  std::unordered_set<int> affectedPairs;
+  const std::vector<SolutionEdge>* edgesToTest = solution->getEdges();
+
+  std::vector<int> affectedPairs;
   affectedPairs.reserve(solution->getNPairs());
   SFPNeighborhood destroy;
   destroy.moves.reserve(solution->getNPairs());
   SFPNeighborhood repair;
   repair.moves.reserve(solution->getNPairs());
-  std::vector<int> pairsToRepair;
-  pairsToRepair.reserve(solution->getNPairs());
 
-  for (const auto& edgeToDrop : edgesToTest) {
+  double currentBestCost = solution->getCurrentCost();
+  bool foundAnyImprovement = false;
+
+  for (const auto& edgeToDrop : *edgesToTest) {
     if (!solution->isEdgeActive(edgeToDrop.id)) continue;
 
     ditchs[edgeToDrop.id] = 1;
     if (edgeToDrop.reverse_id != -1) ditchs[edgeToDrop.reverse_id] = 1;
 
-    double originalCost = solution->getCurrentCost();
-
     affectedPairs.clear();
     destroy.moves.clear();
-    pairsToRepair.clear();
     repair.moves.clear();
 
-    // LEVEL 1 (The Epicenter): Pairs that pass exactly through the removed edge
-    std::vector<int> currentWave;
-    for (int pair_id : solution->getEdgePairs(edgeToDrop))
-      if (affectedPairs.insert(pair_id).second) {
-        destroy.moves.push_back({solution, MoveType::DSCNCT_PAIR, pair_id, solution->getPairEdges(pair_id)});
-        currentWave.push_back(pair_id);
-      }
-
-    // LEVELS 2 TO DELTA (The Shock Wave): Cascading Competitors
-    for (int d = 2; d <= delta; ++d) {
-      std::vector<int> nextWave;
-      for (int p : currentWave)
-        for (int comp : solution->getCompetingPairs(p))
-          if (affectedPairs.insert(comp).second) {
-            destroy.moves.push_back({solution, MoveType::DSCNCT_PAIR, comp, solution->getPairEdges(comp)});
-            nextWave.push_back(comp);
-          }
-      if (nextWave.empty()) break; 
-      currentWave = std::move(nextWave);
+    for (int pair_id : *solution->getEdgePairs(edgeToDrop.id)){
+      affectedPairs.push_back(pair_id);
+      destroy.moves.push_back({solution, MoveType::DSCNCT_PAIR, pair_id, *solution->getPairEdges(pair_id)});
     }
 
     destroy.apply();
     bool feasible = true;
-    pairsToRepair.assign(affectedPairs.begin(), affectedPairs.end());
-    std::shuffle(pairsToRepair.begin(), pairsToRepair.end(), rng);
-    
-    for (auto pair : pairsToRepair) {
+
+    for (auto pair : affectedPairs) {
       auto [source, target] = solution->getPairNodes(pair);
+
       auto result = dijkstra->getShortPath(source, target, solution->getBitmask(), &ditchs);
-      
+
       if (result.second < 0) {
         feasible = false;
         break;
       }
+
       repair.addMoveApplying({solution, MoveType::CNCT_PAIR, pair, std::move(result.first)});
     }
 
     double newCost = solution->getCurrentCost();
-    
-    if (feasible && newCost < originalCost - 1e-4) return true;
-    else {
+
+    if (feasible && newCost < currentBestCost - 1e-4) {
+      currentBestCost = newCost;
+      foundAnyImprovement = true;
+    } else {
       repair.undo();
       destroy.undo();
     }
@@ -90,125 +68,141 @@ bool GRASPLocalSearch::optimize(SFPSolution* solution, std::mt19937& rng) {
     ditchs[edgeToDrop.id] = 0;
     if (edgeToDrop.reverse_id != -1) ditchs[edgeToDrop.reverse_id] = 0;
   }
+  return foundAnyImprovement;
+}
 
-  return false;
-} 
 
-/**
- * @brief Implementation of the Variable Neighborhood Descent (VNS) Local Search.
- */
-bool VNS::optimize(SFPSolution* solution, std::mt19937& rng) {
+bool HubBreakingLocalSearch::optimize(SFPSolution* solution) {
   if (!dijkstra)
-    dijkstra = std::make_shared<DijkstraEngine>(solution->getProblem()->getGraphPtr());
-  
-  int nEdgesGraph = solution->getProblem()->getNEdges();
-  std::vector<uint8_t> ditchs(nEdgesGraph, 0);
+    dijkstra = std::make_shared<BidirectionalDijkstraEngine>(
+        solution->getProblem()->getGraphPtr());
 
-  std::vector<SolutionEdge> shuffledEdges = solution->getEdges();
-  if (shuffledEdges.empty()) return false;
+  const auto* problem = solution->getProblem();
+  const auto graph = problem->getGraphPtr();
+  int nNodes = problem->getNNodes();
+  int nEdges = problem->getNEdges();
 
-  int N = (int) shuffledEdges.size();
-  if (N == 0) return false;
-  
-  int k1 = std::max(2, (int)(N * 0.05));
-  int k2 = std::max(k1 + 1, (int)(N * 0.10));
-  int k3 = std::max(k2 + 1, (int)(N * 0.15));
-  int k4 = std::max(k3 + 1, (int)(N * 0.20));
-  
-  int k_steps[] = {1, k1, k2, k3, k4};
+  struct HubInfo {
+    int nodeId;
+    std::vector<int> activeEdges;
+    double totalCost = 0.0;
+    double instabilityIndex = 0.0;
+  };
 
-  std::unordered_set<int> affectedPairs;
-  affectedPairs.reserve(solution->getNPairs());
-  SFPNeighborhood destroy;
-  destroy.moves.reserve(solution->getNPairs());
-  SFPNeighborhood repair;
-  repair.moves.reserve(solution->getNPairs());
-  std::vector<int> pairsToRepair;
-  pairsToRepair.reserve(solution->getNPairs());
+  std::vector<HubInfo> hubs(nNodes);
+  for (int i = 0; i < nNodes; ++i) hubs[i].nodeId = i;
 
-  for (int k : k_steps) {
-    if (k > N) k = N; 
+  const auto* active_edges = solution->getEdges();
+  for (const auto& sEdge : *active_edges) { 
+    int u = graph->edges[sEdge.id].source;
+    int v = graph->edges[sEdge.id].target;
+    double weight = sEdge.weight; 
 
-    int attempts = (k == 1) ? N : std::min(10, N);
+    hubs[u].activeEdges.push_back(sEdge.id);
+    hubs[u].totalCost += weight;
+
+    hubs[v].activeEdges.push_back(sEdge.id);
+    hubs[v].totalCost += weight;
+  }
+
+  std::vector<HubInfo> hubsToTest;
+  hubsToTest.reserve(nNodes);
+
+  for (auto& hub : hubs) {
+    if ((int) hub.activeEdges.size() < 3) continue;
+ 
+    std::vector<int> affectedPairs; 
+    for (int edgeId : hub.activeEdges) { 
+      const auto* pList = solution->getEdgePairs(edgeId); 
+      affectedPairs.insert(affectedPairs.end(), pList->begin(), pList->end());
+    }
     
-    std::shuffle(shuffledEdges.begin(), shuffledEdges.end(), rng);
+    std::sort(affectedPairs.begin(), affectedPairs.end());
+    affectedPairs.erase(std::unique(affectedPairs.begin(), affectedPairs.end()), affectedPairs.end());
+
+    if (affectedPairs.empty()) continue;
+ 
+    double sumSynergy = 0.0; 
+    for (int pId : affectedPairs) 
+      sumSynergy += (1.0 + solution->getPair(pId).synergy); 
     
-    for(int att = 0; att < attempts; att++){
-      double originalCost = solution->getCurrentCost();
-      
-      affectedPairs.clear();    
-      destroy.moves.clear();
-      pairsToRepair.clear();
-      repair.moves.clear();
-      
-      if (k > 1) std::shuffle(shuffledEdges.begin(), shuffledEdges.end(), rng);
-      else std::swap(shuffledEdges[0], shuffledEdges[att]);
+    double averageSynergy = sumSynergy / affectedPairs.size();
+
+    hub.instabilityIndex = hub.totalCost / averageSynergy;
+    hubsToTest.push_back(hub);
+  }
+
+  std::sort(hubsToTest.begin(), hubsToTest.end(),
+            [](const HubInfo& a, const HubInfo& b) {
+              return a.instabilityIndex > b.instabilityIndex;
+            }); 
+ 
+  std::vector<uint8_t> ditchs(nEdges, 0); 
+  double currentBestCost = solution->getCurrentCost(); 
+  bool foundAnyImprovement = false;
+
+  for (const auto& hub : hubsToTest) {
+ 
+    std::vector<int> validEdgesToDrop; 
+    for (int edgeId : hub.activeEdges) 
+      if (solution->isEdgeActive(edgeId)) validEdgesToDrop.push_back(edgeId);
+
+    if ((int) validEdgesToDrop.size() < 3) continue;
+ 
+    std::vector<int> pairsToRepair; 
+    for (int edgeId : validEdgesToDrop) { 
+      const auto* pList = solution->getEdgePairs(edgeId); 
+      pairsToRepair.insert(pairsToRepair.end(), pList->begin(), pList->end());
+    }
+    std::sort(pairsToRepair.begin(), pairsToRepair.end());
+    pairsToRepair.erase(std::unique(pairsToRepair.begin(), pairsToRepair.end()), pairsToRepair.end());
+
+    std::sort(pairsToRepair.begin(), pairsToRepair.end(), [&](int a, int b) {
+      return solution->getPair(a).synergy > solution->getPair(b).synergy; 
+    });
+
+    for (int id : validEdgesToDrop) {
+      ditchs[id] = 1;
+      int rev = graph->edges[id].reverseEdgePtr;
+      if (rev != -1) ditchs[rev] = 1;
+    }  
+  
+    SFPNeighborhood destroy; 
+    SFPNeighborhood repair;
+
+    for (int pId : pairsToRepair) {  
+      std::vector<int> currentPath = *solution->getPairEdges(pId);  
+      destroy.addMoveApplying({solution, MoveType::DSCNCT_PAIR, pId, currentPath}); 
+    }
+ 
+    bool feasible = true; 
+    for (int pId : pairsToRepair) {
+      auto [src, tgt] = solution->getPairNodes(pId);  
        
-   
-      for (int i = 0; i < k; i++) { 
-        const auto& edgeToDrop = shuffledEdges[i];
-        if (!solution->isEdgeActive(edgeToDrop.id)) continue;
-   
-        ditchs[edgeToDrop.id] = 1;  
-        if (edgeToDrop.reverse_id != -1) ditchs[edgeToDrop.reverse_id] = 1;
-   
-        // LEVEL 1 (The Epicenter): Pairs that pass exactly through the removed edge
-        std::vector<int> currentWave; 
-        for (int pair_id : solution->getEdgePairs(edgeToDrop))
-          if (affectedPairs.insert(pair_id).second) {
-            destroy.moves.push_back({solution, MoveType::DSCNCT_PAIR, pair_id, solution->getPairEdges(pair_id)});
-            currentWave.push_back(pair_id);
-          } 
-   
-        // LEVELS 2 TO DELTA (The Shock Wave): Cascading Competitors
-        for (int d = 2; d <= delta; ++d) {
-          std::vector<int> nextWave; 
-          for (int p : currentWave) 
-            for (int comp : solution->getCompetingPairs(p))
-              if (affectedPairs.insert(comp).second) {
-                destroy.moves.push_back({solution, MoveType::DSCNCT_PAIR, comp, solution->getPairEdges(comp)});
-                nextWave.push_back(comp);
-              }
-          if (nextWave.empty()) break; 
-          currentWave = std::move(nextWave);
-        }
-      }
-      
-      destroy.apply();
-      bool feasible = true;
-      pairsToRepair.assign(affectedPairs.begin(), affectedPairs.end());
-      std::shuffle(pairsToRepair.begin(), pairsToRepair.end(), rng);
+      auto res = dijkstra->getShortPath(src, tgt, solution->getBitmask(), &ditchs); 
 
-      for (int pair : pairsToRepair) {
-        auto [source, target] = solution->getPairNodes(pair);
-        auto result = dijkstra->getShortPath(source, target, solution->getBitmask(), &ditchs);
-        
-        if (result.second < 0) {
-          feasible = false;
-          break;
-        }
+      if (res.second < 0) {
+        feasible = false; 
+        break; 
+      } 
+      repair.addMoveApplying({solution, MoveType::CNCT_PAIR, pId, std::move(res.first)});
+    } 
+ 
+    if (feasible && solution->getCurrentCost() < currentBestCost - 1e-4) {
+      currentBestCost = solution->getCurrentCost();
+      foundAnyImprovement = true;
+    } 
+    else {  
+      repair.undo();  
+      destroy.undo(); 
+    }
 
-        repair.addMoveApplying({solution, MoveType::CNCT_PAIR, pair, std::move(result.first)});
-
-        if (solution->getCurrentCost() >= originalCost - 1e-4) {
-          feasible = false;
-          break;
-        }
-      }
-
-      double newCost = solution->getCurrentCost();
-
-      for (int i = 0; i < k; i++) {
-        ditchs[shuffledEdges[i].id] = 0;
-        if (shuffledEdges[i].reverse_id != -1) ditchs[shuffledEdges[i].reverse_id] = 0;
-      }
-
-      if (feasible && newCost < originalCost - 1e-4) return true;
-      
-      repair.undo();
-      destroy.undo();
-      if (k == 1) std::swap(shuffledEdges[0], shuffledEdges[att]);
+    for (int id : validEdgesToDrop) {
+      ditchs[id] = 0;
+      int rev = graph->edges[id].reverseEdgePtr;
+      if (rev != -1) ditchs[rev] = 0;
     }
   }
-  return false;
+
+  return foundAnyImprovement;
 }
