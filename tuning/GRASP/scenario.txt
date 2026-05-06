@@ -1,5 +1,5 @@
-maxExperiments = 1000
+maxExperiments = 1000 
 parameterFile = "parameters.txt"
 trainInstancesFile = "instances.txt"
 targetRunner = "./target-runner"
-parallel = 8
+parallel = 8 

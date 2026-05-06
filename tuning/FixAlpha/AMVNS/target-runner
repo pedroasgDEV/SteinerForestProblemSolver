@@ -1,9 +1,0 @@
-#!/bin/bash
-INSTANCE=$4
-
-shift 4
-PARAMS=$*
-
-OUTPUT=$(../../steiner_forest --IRACE --AMVNS -f $INSTANCE -i 1 -a 1.0 $PARAMS)
-
-echo "$OUTPUT"
