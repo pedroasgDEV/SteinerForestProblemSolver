@@ -7,5 +7,6 @@ void graphTests();
 void dijkstraTests();
 void dsuTests();
 void steinerForestTests();
+void BidirectionalDijkstraTests();
 
 #endif

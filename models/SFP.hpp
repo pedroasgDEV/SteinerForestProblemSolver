@@ -5,7 +5,6 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -23,15 +22,15 @@ struct SolutionEdge {
   int id;
   int reverse_id;  ///< Reverse Edge index
   double weight;   ///< Edge weight
-  mutable std::unordered_set<int> pairs;  ///< list of pairs that the edge connects (int::ptr -> SFPSolution.pairs)
-  mutable double I_e; ///< Belly Index (Topological Inefficiency)
+  mutable std::vector<int> pairs;  ///< list of pairs that the edge connects (int::ptr -> SFPSolution.pairs)
 
-  SolutionEdge(const int id, const int reverse_id, const double weight)
-      : id(id), reverse_id(reverse_id), weight(weight), I_e(0.0f) {
+  SolutionEdge(const int id, const int reverse_id, const double relative_weight)
+      : id(id), reverse_id(reverse_id), weight(relative_weight) {
     if (reverse_id != -1 && id > reverse_id) {
       this->id = reverse_id;
       this->reverse_id = id;
     }
+    pairs.reserve(10);
   }
 
   bool operator==(const SolutionEdge& other) const {
@@ -48,38 +47,32 @@ struct SolutionPair {
   int source;           ///< Edge index
   int target;           ///< Reverse Edge index
   double pathCost;      ///< Actual path cost
-  double previousCost;  ///< Last path cost
-  mutable std::unordered_set<int>
+  int synergy;          ///< Sum of intersections
+  mutable std::vector<int>
       edges;  ///< list of edges that connect the pair (int::ptr -> Graph.edges)
   mutable std::vector<int>
       competing_pairs_sum;  ///< list with the sum of intersections with other
-                            ///< pairs
+                            //< pairs
 
   SolutionPair(const int source, const int target, const int nTerms)
       : source(source),
         target(target),
         pathCost(0.0f),
-        previousCost(0.0f),
+        synergy(0),
         competing_pairs_sum(std::vector<int>(nTerms, 0)) {
     if (source > target) {
       this->source = target;
       this->target = source;
     }
+    edges.reserve(50);
   }
-
+  
   bool operator==(const SolutionPair& other) const {
     return (source == other.source && target == other.target) ||
            (target == other.source && source == other.target);
   }
 };
-
-struct EdgeHash {
-  inline std::size_t operator()(const SolutionEdge& e) const {
-    return static_cast<std::size_t>((static_cast<uint64_t>(e.id) << 32) |
-                                    static_cast<uint32_t>(e.reverse_id));
-  }
-};
-
+  
 /**
  * @class SFPSolution
  * @brief Mutable state of the SFP.
@@ -89,42 +82,37 @@ class SFPSolution {
 
  protected:
   const SFPProblem* problem;
-  mutable std::vector<uint8_t> bitmask;
+  std::vector<int> edges;
+  std::vector<uint8_t> bitmask;
+  std::vector<std::pair<uint8_t, int>> nodes;
   double currentCost;
-  mutable std::unordered_set<SolutionEdge, EdgeHash> edges;
-  mutable std::vector<SolutionPair> pairs;
+  std::vector<SolutionEdge> active_edges;
+  std::vector<SolutionPair> pairs;
 
  public:
   SFPSolution(const SFPProblem* problem, std::vector<SolutionPair> pairs = {});
+  
+  bool isTerminal(int node_id) const {return nodes[node_id].first; }
+  bool isEdgeActive(const int edge_id) const {return bitmask[edge_id];};
+  const std::vector<uint8_t>* getBitmask() const { return &bitmask; }
+  
+  const std::vector<SolutionEdge>* getEdges() const { return &active_edges; }
+  int getNEdges() const { return active_edges.size(); }
+  const std::vector<int>* getEdgePairs(const int edge_id) const { 
+    int Sol_edge = edges[edge_id];
+    return &active_edges[Sol_edge].pairs;
+  }
 
-  bool isEdgeActive(const int edge_id) const;
-  std::vector<SolutionEdge> getEdges() const {
-    return {edges.begin(), edges.end()};
-  }
-  int getNEdges() const { return edges.size(); }
-  std::vector<int> getEdgePairs(const SolutionEdge& edge) const;
-
-  std::vector<int> getPairEdges(const int pair_id) const;
-  double getPairCost(const int pair_id) const;
-  std::pair<int, int> getPairNodes(const int pair_id) const {
-    return {pairs[pair_id].source, pairs[pair_id].target};
-  }
-  void snapshotPairCost(const int pair_id) const {
-    if(pair_id >= 0 && pair_id < (int)pairs.size())
-        pairs[pair_id].previousCost = pairs[pair_id].pathCost;
-  }
-  double getPairPreviousCost(const int pair_id) const {
-    if(pair_id >= 0 && pair_id < (int)pairs.size())
-        return pairs[pair_id].previousCost;
-    return -1.0;
-  }
+  const std::vector<int>* getPairEdges(const int pair_id) const { return &pairs[pair_id].edges; }
+  double getPairCost(const int pair_id) const { return pairs[pair_id].pathCost; }
+  const std::pair<int, int> getPairNodes(const int pair_id) const { return {pairs[pair_id].source, pairs[pair_id].target}; }
   const SolutionPair& getPair(const int pair_id) const { return pairs[pair_id]; }
 
   int getNPairs() const { return pairs.size(); }
-  std::vector<int> getCompetingPairs(const int pair_id) const {
+  const std::vector<int> getCompetingPairs(const int pair_id) const {
     std::vector<int> temp;
     temp.reserve(16);
-    for (int it = 0; it < (int)pairs.size(); it++)
+    for (int it = 0; it < (int) pairs.size(); it++)
       if (pairs[pair_id].competing_pairs_sum[it] > 0) temp.push_back(it);
     return temp;
   }
@@ -132,7 +120,6 @@ class SFPSolution {
     return pairs[pair_a].competing_pairs_sum[pair_b];
   }
 
-  const std::vector<uint8_t>* getBitmask() const { return &bitmask; }
   double getCurrentCost() const { return currentCost; }
   const SFPProblem* getProblem() const { return problem; }
   bool isFeasible() const;
@@ -157,7 +144,6 @@ class SFPProblem {
   std::shared_ptr<Graph> graph;
   std::vector<std::pair<int, int>> terminals;
   std::string instanceName;
-  double maxEdgeWeight;
 
  public:
   explicit SFPProblem(std::shared_ptr<Graph> g,
@@ -169,7 +155,6 @@ class SFPProblem {
   SFPSolution empty_solution() const { return SFPSolution(this); }
 
   const std::shared_ptr<Graph> getGraphPtr() const { return graph; }
-  double getMaxEdgeWeight() const { return maxEdgeWeight; }
   const std::vector<std::pair<int, int>>& getTerminals() const { return terminals; }
   int getNEdges() const { return graph ? graph->nEdges : 0; }
   int getNNodes() const { return graph ? graph->nNodes : 0; }

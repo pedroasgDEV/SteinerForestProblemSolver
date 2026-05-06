@@ -7,7 +7,7 @@
 
 // Helper function to verify if the list of EDGE INDICES corresponds to the
 // sequence of NODES
-bool verifyPath(const Graph& g, const std::vector<int>& pathEdges,
+static bool verifyPath(const Graph& g, const std::vector<int>& pathEdges,
                 const std::vector<int>& expectedNodes) {
   // Path is empty
   if (pathEdges.empty()) return expectedNodes.size() <= 1;
