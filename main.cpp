@@ -37,14 +37,17 @@ int main(int argc, char** argv) {
   bool flag_test_graph = false;
   bool flag_test_DSU = false;
   bool flag_test_dijkstra = false;
+  bool flag_test_bidijkstra = false;
   bool flag_test_SFP = false;
 
   app.add_flag("--test", flag_test_all, "Runs all available tests");
   app.add_flag("--test-graph", flag_test_graph,
                "Runs only the Graph struct tests");
   app.add_flag("--test-DSU", flag_test_DSU, "Runs only the DSU struct tests");
-  app.add_flag("--test-dijkstra", flag_test_dijkstra,
-               "Runs only the Dijkstra algorithm tests");
+  app.add_flag("--test-dijkstra", flag_test_dijkstra, 
+          "Runs only the Dijkstra algorithm tests");
+  app.add_flag("--test-bi-dijkstra", flag_test_bidijkstra, 
+          "Runs only the Bidirectional Dijkstra algorithm tests");
   app.add_flag("--test-sfp", flag_test_SFP,
                "Runs only the Steiner Forest Problem implementation tests");
 
@@ -53,19 +56,11 @@ int main(int argc, char** argv) {
   int maxIter = 1;
   bool flag_irace = false;
   bool flag_grasp = false;
-  bool flag_amvns = false;
-  bool flag_vns = false;
-  int delta1 = 1;
-  int delta2 = 1;
+  bool flag_hubBreak = false;
 
-  app.add_option("-d,--delta1", delta1, "Delta parameter (Shockwave Level) for the Local Search / Diversification phase")
-      ->check(CLI::Range(0, 5));
-  app.add_option("-D,--delta2", delta2, "Delta parameter for AMVNS Intensification phase")
-      ->check(CLI::Range(0, 5));
   app.add_flag("--IRACE", flag_irace, "Runs for tuning");
   app.add_flag("--GRASP", flag_grasp, "Runs GRASP-SFP metaheuristic");
-  app.add_flag("--AMVNS", flag_amvns, "Runs AM-VNS metaheuristic");
-  app.add_flag("--VNS", flag_vns, "Runs GRASP-VNS-SFP metaheuristic");
+  app.add_flag("--HUB", flag_hubBreak, "Runs GRASP and Hubs Break metaheuristic");
   app.add_option("-f,--file", input_file, "Path to a single .stp file to solve")
       ->check(CLI::ExistingFile);
   app.add_option("-a,--alpha", alpha, "Alpha parameter for constructive heuristic")
@@ -79,12 +74,14 @@ int main(int argc, char** argv) {
     if (flag_test_all) {
       graphTests();
       dijkstraTests();
+      BidirectionalDijkstraTests();
       dsuTests();
       steinerForestTests();
       return 0;
     }
     if (flag_test_graph) graphTests();
     if (flag_test_dijkstra) dijkstraTests();
+    if (flag_test_bidijkstra) BidirectionalDijkstraTests();
     if (flag_test_DSU) dsuTests();
     if (flag_test_SFP) steinerForestTests();
     return 0;
@@ -100,11 +97,11 @@ int main(int argc, char** argv) {
     catch (const std::exception& e) { panic("Error parsing file\n" + std::string(e.what())); }
     
     double firstSolutionCost = 0.0f, solutionCost = 0.0f, timeMs = 0.0f; 
-    if(!flag_grasp && !flag_vns && !flag_amvns){
-        auto generate = std::make_unique<GRASPConstructiveHeuristic>(nullptr, alpha);
+    if(!flag_grasp && !flag_hubBreak){
         static std::random_device rd; static std::mt19937 rng(rd()); 
+        auto generate = std::make_unique<GRASPConstructiveHeuristic>(rng, nullptr, alpha);
         auto start = std::chrono::high_resolution_clock::now();
-        auto solution = generate->generate(&problem, rng);
+        auto solution = generate->generate(&problem);
         auto end = std::chrono::high_resolution_clock::now();
         
         if(!solution.isFeasible()) panic("No valid solution was found.");
@@ -114,9 +111,8 @@ int main(int argc, char** argv) {
     }
     else {
         std::unique_ptr<SolverStrategy> metaheuristic;
-        if (flag_grasp) metaheuristic = std::make_unique<Metaheuristics<GRASPConstructiveHeuristic, GRASPLocalSearch>>(&problem, maxIter, alpha, delta1);
-        else if (flag_vns) metaheuristic = std::make_unique<Metaheuristics<GRASPConstructiveHeuristic, VNS>>(&problem, maxIter, alpha, delta1);
-        else metaheuristic = std::make_unique<AMVNS>(&problem, maxIter, alpha, delta1, delta2);
+        if (flag_grasp) metaheuristic = std::make_unique<Metaheuristics<GRASPLocalSearch>>(&problem, maxIter, alpha);
+        else metaheuristic = std::make_unique<Metaheuristics<HubBreakingLocalSearch>>(&problem, maxIter, alpha);
         
         auto start = std::chrono::high_resolution_clock::now();
         auto solution = metaheuristic->solve();

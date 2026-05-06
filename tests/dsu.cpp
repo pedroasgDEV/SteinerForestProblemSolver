@@ -1,5 +1,8 @@
 #include "Tests.hpp"
 
+#include "../utils/DSU.hpp"
+
+#include <iostream>
 /**
  * @brief Tests basic construction and initial state of the DSU.
  */
