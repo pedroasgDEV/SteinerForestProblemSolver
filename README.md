@@ -146,3 +146,9 @@ This project makes use of the following open-source libraries and resources:
 * **[SteinForestProblem Instances](https://github.com/lalehghalami/SteinForestProblem)**: Benchmark datasets used for validating and testing the algorithms.
     * **Reference**: Ghalami, L., & Grosu, D. (2022). "Approximation algorithms for Steiner forest: An experimental study". *Networks*, 79(2), 164-188.
     * **DOI**: [10.1002/net.22046](https://doi.org/10.1002/net.22046)
+
+-----
+
+## Acknowledgments
+
+This work was carried out with the support of the **Minas Gerais State Agency for Research and Development (FAPEMIG)**. The authors also would like to thank the **GOAL research group**, the **Postgraduate Program in Computer Science (PPGCC)**, the **Computing Department (DECOM)**, and the **Federal University of Ouro Preto (UFOP)** for the essential institutional and infrastructural support provided for the development of this research.
