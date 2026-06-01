@@ -1,3 +1,0 @@
-# name  switch  type  values
-delta1  "-d "   i     (1, 5)
-delta2  "-D "   i     (1, 5)
