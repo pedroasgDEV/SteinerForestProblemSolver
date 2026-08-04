@@ -54,13 +54,13 @@ int main(int argc, char** argv) {
   std::string input_file;
   float alpha = 1.0f;
   int maxIter = 1;
-  bool flag_irace = false;
   bool flag_grasp = false;
   bool flag_hubBreak = false;
+  bool flag_rapid = false;
 
-  app.add_flag("--IRACE", flag_irace, "Runs for tuning");
   app.add_flag("--GRASP", flag_grasp, "Runs GRASP-SFP metaheuristic");
   app.add_flag("--HUB", flag_hubBreak, "Runs GRASP and Hubs Break metaheuristic");
+  app.add_flag("-r,--rapid", flag_rapid, "Runs with a rapid constructive heuristic");
   app.add_option("-f,--file", input_file, "Path to a single .stp file to solve")
       ->check(CLI::ExistingFile);
   app.add_option("-a,--alpha", alpha, "Alpha parameter for constructive heuristic")
@@ -72,7 +72,6 @@ int main(int argc, char** argv) {
   
   if (flag_test_all || flag_test_graph || flag_test_dijkstra || flag_test_SFP || flag_test_DSU) {
     if (flag_test_all) {
-      graphTests();
       dijkstraTests();
       BidirectionalDijkstraTests();
       dsuTests();
@@ -96,54 +95,29 @@ int main(int argc, char** argv) {
     try { file >> problem;} 
     catch (const std::exception& e) { panic("Error parsing file\n" + std::string(e.what())); }
     
-    double firstSolutionCost = 0.0f, solutionCost = 0.0f, timeMs = 0.0f; 
     if(!flag_grasp && !flag_hubBreak){
         static std::random_device rd; static std::mt19937 rng(rd()); 
-        auto generate = std::make_unique<GRASPConstructiveHeuristic>(rng, nullptr, alpha);
+        
+        std::unique_ptr<ConstructiveStrategy> generate;
+        if(flag_rapid) generate = std::make_unique<ConstructiveHeuristic>(rng, nullptr); 
+        else generate = std::make_unique<GRASPConstructiveHeuristic>(rng, nullptr, alpha);
+        
         auto start = std::chrono::high_resolution_clock::now();
         auto solution = generate->generate(&problem);
         auto end = std::chrono::high_resolution_clock::now();
         
         if(!solution.isFeasible()) panic("No valid solution was found.");
-        firstSolutionCost = solution.getCurrentCost();
-        solutionCost = firstSolutionCost;
-        timeMs = std::chrono::duration<double, std::milli>(end - start).count();
+        double timeMs = std::chrono::duration<double, std::milli>(end - start).count();
+        std::cout << 0 << " " << std::fixed << std::setprecision(3) << timeMs << " " << (int) solution.getCurrentCost() << std::endl;
     }
     else {
         std::unique_ptr<SolverStrategy> metaheuristic;
-        if (flag_grasp) metaheuristic = std::make_unique<Metaheuristics<GRASPLocalSearch>>(&problem, maxIter, alpha);
-        else metaheuristic = std::make_unique<Metaheuristics<HubBreakingLocalSearch>>(&problem, maxIter, alpha);
-        
-        auto start = std::chrono::high_resolution_clock::now();
+        if (flag_grasp) metaheuristic = std::make_unique<Metaheuristics<GRASPLocalSearch>>(&problem, maxIter, alpha, flag_rapid);
+        else metaheuristic = std::make_unique<Metaheuristics<HubBreakingLocalSearch>>(&problem, maxIter, alpha, flag_rapid);
         auto solution = metaheuristic->solve();
-        auto end = std::chrono::high_resolution_clock::now();
-
         if(!solution.isFeasible()) panic("No valid solution was found.");
-        firstSolutionCost = metaheuristic->getFirstCost();
-        solutionCost = solution.getCurrentCost();
-        timeMs = std::chrono::duration<double, std::milli>(end - start).count();
     }
     
-    if(flag_irace){ std::cout << solutionCost ; return 0; }
-
-    std::string filename = getFileName(input_file);
-    int nNodes = problem.getNNodes();
-    int nEdges = problem.getNEdges();
-    int nTerminals = problem.getTerminals().size();
-    float alphaUsed = alpha;
-
-    std::cout << "\n================ EXECUTION SUMMARY ================" << std::endl;
-    std::cout << std::left << std::setw(20) << "Instance File:" << filename << std::endl;
-    std::cout << std::left << std::setw(20) << "Nodes:"         << nNodes << std::endl;
-    std::cout << std::left << std::setw(20) << "Edges:"         << nEdges << std::endl;
-    std::cout << std::left << std::setw(20) << "Terminals:"     << nTerminals << std::endl;
-    std::cout << std::left << std::setw(20) << "Alpha Used:"    << std::fixed << std::setprecision(2) << alphaUsed << std::endl;
-    std::cout << "---------------------------------------------------" << std::endl;
-    std::cout << std::left << std::setw(20) << "First Solution Cost:" << std::fixed << std::setprecision(4) << firstSolutionCost << std::endl;
-    std::cout << std::left << std::setw(20) << "Solution Cost:" << std::fixed << std::setprecision(4) << solutionCost << std::endl;
-    std::cout << std::left << std::setw(20) << "Execution Time:" << std::fixed << std::setprecision(3) << timeMs << " ms" << std::endl;
-    std::cout << "===================================================\n" << std::endl;
-  
     return 0;
   }
   else {

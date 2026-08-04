@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <unordered_map>
 
 #include "../utils/DSU.hpp"
@@ -145,6 +146,35 @@ SFPSolution GRASPConstructiveHeuristic::generate(const SFPProblem* problem) {
       cand.path = std::move(result.first);
       cand.cost = result.second;
     }
+  }
+
+  return solution;
+}
+
+/**
+ * @brief Executes the Constructive Heuristic without ordering the paths.
+ */
+SFPSolution ConstructiveHeuristic::generate(const SFPProblem* problem) {
+  if (!dijkstra)
+    dijkstra =
+        std::make_shared<BidirectionalDijkstraEngine>(problem->getGraphPtr());
+
+  // Generate Pairs
+  auto groups =
+      preprocessTerminalGroups(problem->getNNodes(), problem->getTerminals());
+  auto rawPairs = generatePairs(groups, problem->getTerminals().size(), rng);
+  
+  std::shuffle(rawPairs.begin(), rawPairs.end(), rng);
+  std::vector<SolutionPair> dictPairs = rawPairs;
+  SFPSolution solution(problem, std::move(rawPairs));
+
+  // Connect the pairs
+  for (int i = 0; i < static_cast<int>(dictPairs.size()); ++i) {
+    auto result = dijkstra->getShortPath(
+        dictPairs[i].source, dictPairs[i].target, solution.getBitmask());
+    // Apply the connection using our safe ConnectPairMove
+    SFPMove move(&solution, MoveType::CNCT_PAIR, i,std::move(result.first));
+    move.apply();
   }
 
   return solution;

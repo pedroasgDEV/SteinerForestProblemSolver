@@ -1,0 +1,1110 @@
+nohup: ignorando entrada
+Initiating advanced A/B benchmark for 1129 instances.
+Setup: 10 runs of 200 iterations.
+
+Processing: p455.stp            ...
+Processing: p456.stp            ...
+Processing: p457.stp            ...
+Processing: p458.stp            ...
+Processing: p459.stp            ...
+Processing: p460.stp            ...
+Processing: p461.stp            ...
+Processing: p463.stp            ...
+Processing: p464.stp            ...
+Processing: p465.stp            ...
+Processing: p466.stp            ...
+Processing: berlin52.stp        ...
+Processing: brasil58.stp        ...
+Processing: world666.stp        ...
+Processing: mc13.stp            ...
+Processing: mc2.stp             ...
+Processing: mc3.stp             ...
+Processing: p401.stp            ...
+Processing: p402.stp            ...
+Processing: p403.stp            ...
+Processing: p404.stp            ...
+Processing: p405.stp            ...
+Processing: p406.stp            ...
+Processing: p407.stp            ...
+Processing: p408.stp            ...
+Processing: p409.stp            ...
+Processing: p410.stp            ...
+Processing: antiwheel5.stp      ...
+Processing: design432.stp       ...
+Processing: oddcycle3.stp       ...
+Processing: oddwheel3.stp       ...
+Processing: se03.stp            ...
+Processing: w13c29.stp          ...
+Processing: w23c23.stp          ...
+Processing: w3c571.stp          ...
+Processing: ER-001.stp          ...
+Processing: ER-002.stp          ...
+Processing: ER-003.stp          ...
+Processing: ER-004.stp          ...
+Processing: ER-005.stp          ...
+Processing: ER-006.stp          ...
+Processing: ER-007.stp          ...
+Processing: ER-008.stp          ...
+Processing: ER-009.stp          ...
+Processing: ER-010.stp          ...
+Processing: ER-011.stp          ...
+Processing: ER-012.stp          ...
+Processing: ER-013.stp          ...
+Processing: ER-014.stp          ...
+Processing: ER-015.stp          ...
+Processing: ER-016.stp          ...
+Processing: ER-017.stp          ...
+Processing: ER-018.stp          ...
+Processing: ER-019.stp          ...
+Processing: ER-020.stp          ...
+Processing: ER-021.stp          ...
+Processing: ER-022.stp          ...
+Processing: ER-023.stp          ...
+Processing: ER-024.stp          ...
+Processing: ER-025.stp          ...
+Processing: ER-026.stp          ...
+Processing: ER-027.stp          ...
+Processing: ER-028.stp          ...
+Processing: ER-029.stp          ...
+Processing: ER-030.stp          ...
+Processing: ER-031.stp          ...
+Processing: ER-032.stp          ...
+Processing: ER-033.stp          ...
+Processing: ER-034.stp          ...
+Processing: ER-035.stp          ...
+Processing: ER-036.stp          ...
+Processing: ER-037.stp          ...
+Processing: ER-038.stp          ...
+Processing: ER-039.stp          ...
+Processing: ER-040.stp          ...
+Processing: ER-041.stp          ...
+Processing: ER-042.stp          ...
+Processing: ER-043.stp          ...
+Processing: ER-044.stp          ...
+Processing: ER-045.stp          ...
+Processing: ER-046.stp          ...
+Processing: ER-047.stp          ...
+Processing: ER-048.stp          ...
+Processing: ER-049.stp          ...
+Processing: ER-050.stp          ...
+Processing: ER-051.stp          ...
+Processing: ER-052.stp          ...
+Processing: ER-053.stp          ...
+Processing: ER-054.stp          ...
+Processing: ER-055.stp          ...
+Processing: ER-056.stp          ...
+Processing: ER-057.stp          ...
+Processing: ER-058.stp          ...
+Processing: ER-059.stp          ...
+Processing: ER-060.stp          ...
+Processing: ER-061.stp          ...
+Processing: ER-062.stp          ...
+Processing: ER-063.stp          ...
+Processing: ER-064.stp          ...
+Processing: ER-065.stp          ...
+Processing: ER-066.stp          ...
+Processing: ER-067.stp          ...
+Processing: ER-068.stp          ...
+Processing: ER-069.stp          ...
+Processing: ER-070.stp          ...
+Processing: ER-071.stp          ...
+Processing: ER-072.stp          ...
+Processing: ER-073.stp          ...
+Processing: ER-074.stp          ...
+Processing: ER-075.stp          ...
+Processing: ER-076.stp          ...
+Processing: ER-077.stp          ...
+Processing: ER-078.stp          ...
+Processing: ER-079.stp          ...
+Processing: ER-080.stp          ...
+Processing: ER-081.stp          ...
+Processing: ER-082.stp          ...
+Processing: ER-083.stp          ...
+Processing: ER-084.stp          ...
+Processing: ER-085.stp          ...
+Processing: ER-086.stp          ...
+Processing: ER-087.stp          ...
+Processing: ER-088.stp          ...
+Processing: ER-089.stp          ...
+Processing: ER-090.stp          ...
+Processing: ER-091.stp          ...
+Processing: ER-092.stp          ...
+Processing: ER-093.stp          ...
+Processing: ER-094.stp          ...
+Processing: ER-095.stp          ...
+Processing: ER-096.stp          ...
+Processing: ER-097.stp          ...
+Processing: ER-098.stp          ...
+Processing: ER-099.stp          ...
+Processing: ER-100.stp          ...
+Processing: ER-101.stp          ...
+Processing: ER-102.stp          ...
+Processing: ER-103.stp          ...
+Processing: ER-104.stp          ...
+Processing: ER-105.stp          ...
+Processing: ER-106.stp          ...
+Processing: ER-107.stp          ...
+Processing: ER-108.stp          ...
+Processing: ER-109.stp          ...
+Processing: ER-110.stp          ...
+Processing: ER-111.stp          ...
+Processing: ER-112.stp          ...
+Processing: ER-113.stp          ...
+Processing: ER-114.stp          ...
+Processing: ER-115.stp          ...
+Processing: ER-116.stp          ...
+Processing: ER-117.stp          ...
+Processing: ER-118.stp          ...
+Processing: ER-119.stp          ...
+Processing: ER-120.stp          ...
+Processing: ER-121.stp          ...
+Processing: ER-122.stp          ...
+Processing: ER-123.stp          ...
+Processing: ER-124.stp          ...
+Processing: ER-125.stp          ...
+Processing: ER-126.stp          ...
+Processing: ER-127.stp          ...
+Processing: ER-128.stp          ...
+Processing: ER-129.stp          ...
+Processing: ER-130.stp          ...
+Processing: ER-131.stp          ...
+Processing: ER-132.stp          ...
+Processing: ER-133.stp          ...
+Processing: ER-134.stp          ...
+Processing: ER-135.stp          ...
+Processing: ER-136.stp          ...
+Processing: ER-137.stp          ...
+Processing: ER-138.stp          ...
+Processing: ER-139.stp          ...
+Processing: ER-140.stp          ...
+Processing: ER-141.stp          ...
+Processing: ER-142.stp          ...
+Processing: ER-143.stp          ...
+Processing: ER-144.stp          ...
+Processing: ER-145.stp          ...
+Processing: ER-146.stp          ...
+Processing: ER-147.stp          ...
+Processing: ER-148.stp          ...
+Processing: ER-149.stp          ...
+Processing: ER-150.stp          ...
+Processing: ER-151.stp          ...
+Processing: ER-152.stp          ...
+Processing: ER-153.stp          ...
+Processing: ER-154.stp          ...
+Processing: ER-155.stp          ...
+Processing: ER-156.stp          ...
+nohup: ignorando entrada
+Encontradas 191 instâncias já processadas no arquivo 'grasp.log'. Elas serão puladas.
+Iniciando benchmark avançado para as 938 instâncias restantes.
+Setup: Máximo de 10 execuções de 200 iterações. Limite: 1h por instância.
+
+Processing: ER-157.stp          ... [OK] (1/10 execuções)
+Processing: ER-158.stp          ... [OK] (1/10 execuções)
+Processing: ER-159.stp          ... [OK] (1/10 execuções)
+Processing: ER-160.stp          ... [FALHOU OU TIMEOUT TOTAL]
+Processing: ER-161.stp          ... [OK] (1/10 execuções)
+Processing: ER-162.stp          ... [OK] (1/10 execuções)
+Processing: ER-163.stp          ... [OK] (1/10 execuções)
+Processing: ER-164.stp          ... [OK] (1/10 execuções)
+Processing: ER-165.stp          ... [OK] (1/10 execuções)
+Processing: ER-166.stp          ... [OK] (1/10 execuções)
+Processing: ER-167.stp          ... [OK] (1/10 execuções)
+Processing: ER-168.stp          ... [OK] (1/10 execuções)
+Processing: ER-169.stp          ... [FALHOU OU TIMEOUT TOTAL]
+Processing: ER-170.stp          ... [FALHOU OU TIMEOUT TOTAL]
+Processing: ER-171.stp          ... [OK] (1/10 execuções)
+Processing: ER-172.stp          ... [OK] (1/10 execuções)
+Processing: ER-173.stp          ... [OK] (1/10 execuções)
+Processing: ER-174.stp          ... [OK] (1/10 execuções)
+Processing: ER-175.stp          ... [FALHOU OU TIMEOUT TOTAL]
+Processing: ER-176.stp          ... [FALHOU OU TIMEOUT TOTAL]
+Processing: ER-177.stp          ... [FALHOU OU TIMEOUT TOTAL]
+Processing: ER-178.stp          ... [FALHOU OU TIMEOUT TOTAL]
+Processing: ER-179.stp          ... [FALHOU OU TIMEOUT TOTAL]
+Processing: ER-180.stp          ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es1000fst01.stp     ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es1000fst02.stp     ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es1000fst03.stp     ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es1000fst04.stp     ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es1000fst05.stp     ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es1000fst06.stp     ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es1000fst07.stp     ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es1000fst08.stp     ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es1000fst09.stp     ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es1000fst10.stp     ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es1000fst11.stp     ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es1000fst12.stp     ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es1000fst13.stp     ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es1000fst14.stp     ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es1000fst15.stp     ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es100fst01.stp      ... [OK] (10/10 execuções)
+Processing: es100fst02.stp      ... [OK] (10/10 execuções)
+Processing: es100fst03.stp      ... [OK] (10/10 execuções)
+Processing: es100fst04.stp      ... [OK] (10/10 execuções)
+Processing: es100fst05.stp      ... [OK] (10/10 execuções)
+Processing: es100fst06.stp      ... [OK] (10/10 execuções)
+Processing: es100fst07.stp      ... [OK] (10/10 execuções)
+Processing: es100fst08.stp      ... [OK] (10/10 execuções)
+Processing: es100fst09.stp      ... [OK] (10/10 execuções)
+Processing: es100fst10.stp      ... [OK] (10/10 execuções)
+Processing: es100fst11.stp      ... [OK] (10/10 execuções)
+Processing: es100fst12.stp      ... [OK] (10/10 execuções)
+Processing: es100fst13.stp      ... [OK] (10/10 execuções)
+Processing: es100fst14.stp      ... [OK] (10/10 execuções)
+Processing: es100fst15.stp      ... [OK] (10/10 execuções)
+Processing: es10fst01.stp       ... [OK] (10/10 execuções)
+Processing: es10fst02.stp       ... [OK] (10/10 execuções)
+Processing: es10fst03.stp       ... [OK] (10/10 execuções)
+Processing: es10fst04.stp       ... [OK] (10/10 execuções)
+Processing: es10fst05.stp       ... [OK] (10/10 execuções)
+Processing: es10fst06.stp       ... [OK] (10/10 execuções)
+Processing: es10fst07.stp       ... [OK] (10/10 execuções)
+Processing: es10fst08.stp       ... [OK] (10/10 execuções)
+Processing: es10fst09.stp       ... [OK] (10/10 execuções)
+Processing: es10fst10.stp       ... [OK] (10/10 execuções)
+Processing: es10fst11.stp       ... [OK] (10/10 execuções)
+Processing: es10fst12.stp       ... [OK] (10/10 execuções)
+Processing: es10fst13.stp       ... [OK] (10/10 execuções)
+Processing: es10fst14.stp       ... [OK] (10/10 execuções)
+Processing: es10fst15.stp       ... [OK] (10/10 execuções)
+Processing: es20fst01.stp       ... [OK] (10/10 execuções)
+Processing: es20fst02.stp       ... [OK] (10/10 execuções)
+Processing: es20fst03.stp       ... [OK] (10/10 execuções)
+Processing: es20fst04.stp       ... [OK] (10/10 execuções)
+Processing: es20fst05.stp       ... [OK] (10/10 execuções)
+Processing: es20fst06.stp       ... [OK] (10/10 execuções)
+Processing: es20fst07.stp       ... [OK] (10/10 execuções)
+Processing: es20fst08.stp       ... [OK] (10/10 execuções)
+Processing: es20fst09.stp       ... [OK] (10/10 execuções)
+Processing: es20fst10.stp       ... [OK] (10/10 execuções)
+Processing: es20fst11.stp       ... [OK] (10/10 execuções)
+Processing: es20fst12.stp       ... [OK] (10/10 execuções)
+Processing: es20fst13.stp       ... [OK] (10/10 execuções)
+Processing: es20fst14.stp       ... [OK] (10/10 execuções)
+Processing: es20fst15.stp       ... [OK] (10/10 execuções)
+Processing: es250fst01.stp      ... [OK] (7/10 execuções)
+Processing: es250fst02.stp      ... [OK] (5/10 execuções)
+Processing: es250fst03.stp      ... [OK] (7/10 execuções)
+Processing: es250fst04.stp      ... [OK] (5/10 execuções)
+Processing: es250fst05.stp      ... [OK] (5/10 execuções)
+Processing: es250fst06.stp      ... [OK] (6/10 execuções)
+Processing: es250fst07.stp      ... [OK] (5/10 execuções)
+Processing: es250fst08.stp      ... [OK] (3/10 execuções)
+Processing: es250fst09.stp      ... [OK] (6/10 execuções)
+Processing: es250fst10.stp      ... [OK] (5/10 execuções)
+Processing: es250fst11.stp      ... [OK] (5/10 execuções)
+Processing: es250fst12.stp      ... [OK] (5/10 execuções)
+Processing: es250fst13.stp      ... [OK] (4/10 execuções)
+Processing: es250fst14.stp      ... [OK] (4/10 execuções)
+Processing: es250fst15.stp      ... [OK] (4/10 execuções)
+Processing: es30fst01.stp       ... [OK] (10/10 execuções)
+Processing: es30fst02.stp       ... [OK] (10/10 execuções)
+Processing: es30fst03.stp       ... [OK] (10/10 execuções)
+Processing: es30fst04.stp       ... [OK] (10/10 execuções)
+Processing: es30fst05.stp       ... [OK] (10/10 execuções)
+Processing: es30fst06.stp       ... [OK] (10/10 execuções)
+Processing: es30fst07.stp       ... [OK] (10/10 execuções)
+Processing: es30fst08.stp       ... [OK] (10/10 execuções)
+Processing: es30fst09.stp       ... [OK] (10/10 execuções)
+Processing: es30fst10.stp       ... [OK] (10/10 execuções)
+Processing: es30fst11.stp       ... [OK] (10/10 execuções)
+Processing: es30fst12.stp       ... [OK] (10/10 execuções)
+Processing: es30fst13.stp       ... [OK] (10/10 execuções)
+Processing: es30fst14.stp       ... [OK] (10/10 execuções)
+Processing: es30fst15.stp       ... [OK] (10/10 execuções)
+Processing: es40fst01.stp       ... [OK] (10/10 execuções)
+Processing: es40fst02.stp       ... [OK] (10/10 execuções)
+Processing: es40fst03.stp       ... [OK] (10/10 execuções)
+Processing: es40fst04.stp       ... [OK] (10/10 execuções)
+Processing: es40fst05.stp       ... [OK] (10/10 execuções)
+Processing: es40fst06.stp       ... [OK] (10/10 execuções)
+Processing: es40fst07.stp       ... [OK] (10/10 execuções)
+Processing: es40fst08.stp       ... [OK] (10/10 execuções)
+Processing: es40fst09.stp       ... [OK] (10/10 execuções)
+Processing: es40fst10.stp       ... [OK] (10/10 execuções)
+Processing: es40fst11.stp       ... [OK] (10/10 execuções)
+Processing: es40fst12.stp       ... [OK] (10/10 execuções)
+Processing: es40fst13.stp       ... [OK] (10/10 execuções)
+Processing: es40fst14.stp       ... [OK] (10/10 execuções)
+Processing: es40fst15.stp       ... [OK] (10/10 execuções)
+Processing: es500fst01.stp      ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es500fst02.stp      ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es500fst03.stp      ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es500fst04.stp      ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es500fst05.stp      ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es500fst06.stp      ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es500fst07.stp      ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es500fst08.stp      ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es500fst09.stp      ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es500fst10.stp      ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es500fst11.stp      ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es500fst12.stp      ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es500fst13.stp      ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es500fst14.stp      ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es500fst15.stp      ... [FALHOU OU TIMEOUT TOTAL]
+Processing: es50fst01.stp       ... [OK] (10/10 execuções)
+Processing: es50fst02.stp       ... [OK] (10/10 execuções)
+Processing: es50fst03.stp       ... [OK] (10/10 execuções)
+Processing: es50fst04.stp       ... [OK] (10/10 execuções)
+Processing: es50fst05.stp       ... [OK] (10/10 execuções)
+Processing: es50fst06.stp       ... [OK] (10/10 execuções)
+Processing: es50fst07.stp       ... [OK] (10/10 execuções)
+Processing: es50fst08.stp       ... [OK] (10/10 execuções)
+Processing: es50fst09.stp       ... [OK] (10/10 execuções)
+Processing: es50fst10.stp       ... [OK] (10/10 execuções)
+Processing: es50fst11.stp       ... [OK] (10/10 execuções)
+Processing: es50fst12.stp       ... [OK] (10/10 execuções)
+Processing: es50fst13.stp       ... [OK] (10/10 execuções)
+Processing: es50fst14.stp       ... [OK] (10/10 execuções)
+Processing: es50fst15.stp       ... [OK] (10/10 execuções)
+Processing: es60fst01.stp       ... [OK] (10/10 execuções)
+Processing: es60fst02.stp       ... [OK] (10/10 execuções)
+Processing: es60fst03.stp       ... [OK] (10/10 execuções)
+Processing: es60fst04.stp       ... [OK] (10/10 execuções)
+Processing: es60fst05.stp       ... [OK] (9/10 execuções)
+Processing: es60fst06.stp       ... [OK] (10/10 execuções)
+Processing: es60fst07.stp       ... [OK] (10/10 execuções)
+Processing: es60fst08.stp       ... [OK] (10/10 execuções)
+Processing: es60fst09.stp       ... [OK] (10/10 execuções)
+Processing: es60fst10.stp       ... [OK] (10/10 execuções)
+Processing: es60fst11.stp       ... [OK] (10/10 execuções)
+Processing: es60fst12.stp       ... [OK] (10/10 execuções)
+Processing: es60fst13.stp       ... [OK] (10/10 execuções)
+Processing: es60fst14.stp       ... [OK] (10/10 execuções)
+Processing: es60fst15.stp       ... [OK] (10/10 execuções)
+Processing: es70fst01.stp       ... [OK] (10/10 execuções)
+Processing: es70fst02.stp       ... [OK] (10/10 execuções)
+Processing: es70fst03.stp       ... [OK] (10/10 execuções)
+Processing: es70fst04.stp       ... [OK] (10/10 execuções)
+Processing: es70fst05.stp       ... [OK] (10/10 execuções)
+Processing: es70fst06.stp       ... [OK] (10/10 execuções)
+Processing: es70fst07.stp       ... [OK] (10/10 execuções)
+Processing: es70fst08.stp       ... [OK] (10/10 execuções)
+Processing: es70fst09.stp       ... [OK] (10/10 execuções)
+Processing: es70fst10.stp       ... [OK] (10/10 execuções)
+Processing: es70fst11.stp       ... [OK] (10/10 execuções)
+Processing: es70fst12.stp       ... [OK] (10/10 execuções)
+Processing: es70fst13.stp       ... [OK] (10/10 execuções)
+Processing: es70fst14.stp       ... [OK] (9/10 execuções)
+Processing: es70fst15.stp       ... [OK] (10/10 execuções)
+Processing: es80fst01.stp       ... [OK] (10/10 execuções)
+Processing: es80fst02.stp       ... [OK] (10/10 execuções)
+Processing: es80fst03.stp       ... [OK] (10/10 execuções)
+Processing: es80fst04.stp       ... [OK] (10/10 execuções)
+Processing: es80fst05.stp       ... [OK] (10/10 execuções)
+Processing: es80fst06.stp       ... [OK] (10/10 execuções)
+Processing: es80fst07.stp       ... [OK] (10/10 execuções)
+Processing: es80fst08.stp       ... [OK] (10/10 execuções)
+Processing: es80fst09.stp       ... [OK] (10/10 execuções)
+Processing: es80fst10.stp       ... [OK] (10/10 execuções)
+Processing: es80fst11.stp       ... [OK] (10/10 execuções)
+Processing: es80fst12.stp       ... [OK] (9/10 execuções)
+Processing: es80fst13.stp       ... [OK] (10/10 execuções)
+Processing: es80fst14.stp       ... [OK] (10/10 execuções)
+Processing: es80fst15.stp       ... [OK] (10/10 execuções)
+Processing: es90fst01.stp       ... [OK] (10/10 execuções)
+Processing: es90fst02.stp       ... [OK] (10/10 execuções)
+Processing: es90fst03.stp       ... [OK] (10/10 execuções)
+Processing: es90fst04.stp       ... [OK] (10/10 execuções)
+Processing: es90fst05.stp       ... [OK] (10/10 execuções)
+Processing: es90fst06.stp       ... [OK] (10/10 execuções)
+Processing: es90fst07.stp       ... [OK] (10/10 execuções)
+Processing: es90fst08.stp       ... [OK] (10/10 execuções)
+Processing: es90fst09.stp       ... [OK] (10/10 execuções)
+Processing: es90fst10.stp       ... [OK] (10/10 execuções)
+Processing: es90fst11.stp       ... [OK] (10/10 execuções)
+Processing: es90fst12.stp       ... [OK] (10/10 execuções)
+Processing: es90fst13.stp       ... [OK] (10/10 execuções)
+Processing: es90fst14.stp       ... [OK] (10/10 execuções)
+Processing: es90fst15.stp       ... [OK] (10/10 execuções)
+Processing: p619.stp            ... [OK] (10/10 execuções)
+Processing: p620.stp            ... [OK] (10/10 execuções)
+Processing: p621.stp            ... [OK] (10/10 execuções)
+Processing: p622.stp            ... [OK] (10/10 execuções)
+Processing: p623.stp            ... [OK] (10/10 execuções)
+Processing: p624.stp            ... [OK] (10/10 execuções)
+Processing: p625.stp            ... [OK] (10/10 execuções)
+Processing: p626.stp            ... [OK] (10/10 execuções)
+Processing: p627.stp            ... [OK] (10/10 execuções)
+Processing: p628.stp            ... [OK] (10/10 execuções)
+Processing: p629.stp            ... [OK] (10/10 execuções)
+Processing: p630.stp            ... [OK] (10/10 execuções)
+Processing: p631.stp            ... [OK] (10/10 execuções)
+Processing: p632.stp            ... [OK] (10/10 execuções)
+Processing: p633.stp            ... [OK] (10/10 execuções)
+Processing: i080-001.stp        ... [OK] (10/10 execuções)
+Processing: i080-002.stp        ... [OK] (10/10 execuções)
+Processing: i080-003.stp        ... [OK] (10/10 execuções)
+Processing: i080-004.stp        ... [OK] (10/10 execuções)
+Processing: i080-005.stp        ... [OK] (10/10 execuções)
+Processing: i080-011.stp        ... [OK] (10/10 execuções)
+Processing: i080-012.stp        ... [OK] (10/10 execuções)
+Processing: i080-013.stp        ... [OK] (10/10 execuções)
+Processing: i080-014.stp        ... [OK] (10/10 execuções)
+Processing: i080-015.stp        ... [OK] (10/10 execuções)
+Processing: i080-021.stp        ... [OK] (10/10 execuções)
+Processing: i080-022.stp        ... [OK] (10/10 execuções)
+Processing: i080-023.stp        ... [OK] (10/10 execuções)
+Processing: i080-024.stp        ... [OK] (10/10 execuções)
+Processing: i080-025.stp        ... [OK] (10/10 execuções)
+Processing: i080-031.stp        ... [OK] (10/10 execuções)
+Processing: i080-032.stp        ... [OK] (10/10 execuções)
+Processing: i080-033.stp        ... [OK] (10/10 execuções)
+Processing: i080-034.stp        ... [OK] (10/10 execuções)
+Processing: i080-035.stp        ... [OK] (10/10 execuções)
+Processing: i080-041.stp        ... [OK] (10/10 execuções)
+Processing: i080-042.stp        ... [OK] (10/10 execuções)
+Processing: i080-043.stp        ... [OK] (10/10 execuções)
+Processing: i080-044.stp        ... [OK] (10/10 execuções)
+Processing: i080-045.stp        ... [OK] (10/10 execuções)
+Processing: i080-101.stp        ... [OK] (10/10 execuções)
+Processing: i080-102.stp        ... [OK] (10/10 execuções)
+Processing: i080-103.stp        ... [OK] (10/10 execuções)
+Processing: i080-104.stp        ... [OK] (10/10 execuções)
+Processing: i080-105.stp        ... [OK] (10/10 execuções)
+Processing: i080-111.stp        ... [OK] (10/10 execuções)
+Processing: i080-112.stp        ... [OK] (10/10 execuções)
+Processing: i080-113.stp        ... [OK] (10/10 execuções)
+Processing: i080-114.stp        ... [OK] (10/10 execuções)
+Processing: i080-115.stp        ... [OK] (10/10 execuções)
+Processing: i080-121.stp        ... [OK] (10/10 execuções)
+Processing: i080-122.stp        ... [OK] (10/10 execuções)
+Processing: i080-123.stp        ... [OK] (10/10 execuções)
+Processing: i080-124.stp        ... [OK] (10/10 execuções)
+Processing: i080-125.stp        ... [OK] (10/10 execuções)
+Processing: i080-131.stp        ... [OK] (10/10 execuções)
+Processing: i080-132.stp        ... [OK] (10/10 execuções)
+Processing: i080-133.stp        ... [OK] (10/10 execuções)
+Processing: i080-134.stp        ... [OK] (10/10 execuções)
+Processing: i080-135.stp        ... [OK] (10/10 execuções)
+Processing: i080-141.stp        ... [OK] (10/10 execuções)
+Processing: i080-142.stp        ... [OK] (10/10 execuções)
+Processing: i080-143.stp        ... [OK] (10/10 execuções)
+Processing: i080-144.stp        ... [OK] (10/10 execuções)
+Processing: i080-145.stp        ... [OK] (10/10 execuções)
+Processing: i080-201.stp        ... [OK] (10/10 execuções)
+Processing: i080-202.stp        ... [OK] (10/10 execuções)
+Processing: i080-203.stp        ... [OK] (10/10 execuções)
+Processing: i080-204.stp        ... [OK] (10/10 execuções)
+Processing: i080-205.stp        ... [OK] (10/10 execuções)
+Processing: i080-211.stp        ... [OK] (10/10 execuções)
+Processing: i080-212.stp        ... [OK] (10/10 execuções)
+Processing: i080-213.stp        ... [OK] (10/10 execuções)
+Processing: i080-214.stp        ... [OK] (10/10 execuções)
+Processing: i080-215.stp        ... [OK] (10/10 execuções)
+Processing: i080-221.stp        ... [OK] (10/10 execuções)
+Processing: i080-222.stp        ... [OK] (10/10 execuções)
+Processing: i080-223.stp        ... [OK] (10/10 execuções)
+Processing: i080-224.stp        ... [OK] (10/10 execuções)
+Processing: i080-225.stp        ... [OK] (10/10 execuções)
+Processing: i080-231.stp        ... [OK] (10/10 execuções)
+Processing: i080-232.stp        ... [OK] (10/10 execuções)
+Processing: i080-233.stp        ... [OK] (10/10 execuções)
+Processing: i080-234.stp        ... [OK] (10/10 execuções)
+Processing: i080-235.stp        ... [OK] (10/10 execuções)
+Processing: i080-241.stp        ... [OK] (10/10 execuções)
+Processing: i080-242.stp        ... [OK] (10/10 execuções)
+Processing: i080-243.stp        ... [OK] (10/10 execuções)
+Processing: i080-244.stp        ... [OK] (10/10 execuções)
+Processing: i080-245.stp        ... [OK] (10/10 execuções)
+Processing: i080-301.stp        ... [OK] (10/10 execuções)
+Processing: i080-302.stp        ... [OK] (10/10 execuções)
+Processing: i080-303.stp        ... [OK] (10/10 execuções)
+Processing: i080-304.stp        ... [OK] (10/10 execuções)
+Processing: i080-305.stp        ... [OK] (10/10 execuções)
+Processing: i080-311.stp        ... [OK] (10/10 execuções)
+Processing: i080-312.stp        ... [OK] (10/10 execuções)
+Processing: i080-313.stp        ... [OK] (10/10 execuções)
+Processing: i080-314.stp        ... [OK] (10/10 execuções)
+Processing: i080-315.stp        ... [OK] (10/10 execuções)
+Processing: i080-321.stp        ... [OK] (10/10 execuções)
+Processing: i080-322.stp        ... [OK] (10/10 execuções)
+Processing: i080-323.stp        ... [OK] (10/10 execuções)
+Processing: i080-324.stp        ... [OK] (10/10 execuções)
+Processing: i080-325.stp        ... [OK] (10/10 execuções)
+Processing: i080-331.stp        ... [OK] (10/10 execuções)
+Processing: i080-332.stp        ... [OK] (10/10 execuções)
+Processing: i080-333.stp        ... [OK] (10/10 execuções)
+Processing: i080-334.stp        ... [OK] (10/10 execuções)
+Processing: i080-335.stp        ... [OK] (10/10 execuções)
+Processing: i080-341.stp        ... [OK] (10/10 execuções)
+Processing: i080-342.stp        ... [OK] (10/10 execuções)
+Processing: i080-343.stp        ... [OK] (10/10 execuções)
+Processing: i080-344.stp        ... [OK] (10/10 execuções)
+Processing: i080-345.stp        ... [OK] (10/10 execuções)
+Processing: i160-001.stp        ... [OK] (10/10 execuções)
+Processing: i160-002.stp        ... [OK] (10/10 execuções)
+Processing: i160-003.stp        ... [OK] (10/10 execuções)
+Processing: i160-004.stp        ... [OK] (10/10 execuções)
+Processing: i160-005.stp        ... [OK] (10/10 execuções)
+Processing: i160-011.stp        ... [OK] (10/10 execuções)
+Processing: i160-012.stp        ... [OK] (10/10 execuções)
+Processing: i160-013.stp        ... [OK] (10/10 execuções)
+Processing: i160-014.stp        ... [OK] (10/10 execuções)
+Processing: i160-015.stp        ... [OK] (10/10 execuções)
+Processing: i160-021.stp        ... [OK] (10/10 execuções)
+Processing: i160-022.stp        ... [OK] (10/10 execuções)
+Processing: i160-023.stp        ... [OK] (10/10 execuções)
+Processing: i160-024.stp        ... [OK] (10/10 execuções)
+Processing: i160-025.stp        ... [OK] (10/10 execuções)
+Processing: i160-031.stp        ... [OK] (10/10 execuções)
+Processing: i160-032.stp        ... [OK] (10/10 execuções)
+Processing: i160-033.stp        ... [OK] (10/10 execuções)
+Processing: i160-034.stp        ... [OK] (10/10 execuções)
+Processing: i160-035.stp        ... [OK] (10/10 execuções)
+Processing: i160-041.stp        ... [OK] (10/10 execuções)
+Processing: i160-042.stp        ... [OK] (10/10 execuções)
+Processing: i160-043.stp        ... [OK] (10/10 execuções)
+Processing: i160-044.stp        ... [OK] (10/10 execuções)
+Processing: i160-045.stp        ... [OK] (10/10 execuções)
+Processing: i160-101.stp        ... [OK] (10/10 execuções)
+Processing: i160-102.stp        ... [OK] (10/10 execuções)
+Processing: i160-103.stp        ... [OK] (10/10 execuções)
+Processing: i160-104.stp        ... [OK] (10/10 execuções)
+Processing: i160-105.stp        ... [OK] (10/10 execuções)
+Processing: i160-111.stp        ... [OK] (10/10 execuções)
+Processing: i160-112.stp        ... [OK] (10/10 execuções)
+Processing: i160-113.stp        ... [OK] (10/10 execuções)
+Processing: i160-114.stp        ... [OK] (10/10 execuções)
+Processing: i160-115.stp        ... [OK] (10/10 execuções)
+Processing: i160-121.stp        ... [OK] (10/10 execuções)
+Processing: i160-122.stp        ... [OK] (10/10 execuções)
+Processing: i160-123.stp        ... [OK] (10/10 execuções)
+Processing: i160-124.stp        ... [OK] (10/10 execuções)
+Processing: i160-125.stp        ... [OK] (10/10 execuções)
+Processing: i160-131.stp        ... [OK] (10/10 execuções)
+Processing: i160-132.stp        ... [OK] (10/10 execuções)
+Processing: i160-133.stp        ... [OK] (10/10 execuções)
+Processing: i160-134.stp        ... [OK] (10/10 execuções)
+Processing: i160-135.stp        ... [OK] (10/10 execuções)
+Processing: i160-141.stp        ... [OK] (10/10 execuções)
+Processing: i160-142.stp        ... [OK] (10/10 execuções)
+Processing: i160-143.stp        ... [OK] (10/10 execuções)
+Processing: i160-144.stp        ... [OK] (10/10 execuções)
+Processing: i160-145.stp        ... [OK] (10/10 execuções)
+Processing: i160-201.stp        ... [OK] (10/10 execuções)
+Processing: i160-202.stp        ... [OK] (10/10 execuções)
+Processing: i160-203.stp        ... [OK] (10/10 execuções)
+Processing: i160-204.stp        ... [OK] (10/10 execuções)
+Processing: i160-205.stp        ... [OK] (10/10 execuções)
+Processing: i160-211.stp        ... [OK] (10/10 execuções)
+Processing: i160-212.stp        ... [OK] (10/10 execuções)
+Processing: i160-213.stp        ... [OK] (10/10 execuções)
+Processing: i160-214.stp        ... [OK] (10/10 execuções)
+Processing: i160-215.stp        ... [OK] (10/10 execuções)
+Processing: i160-221.stp        ... [OK] (10/10 execuções)
+Processing: i160-222.stp        ... [OK] (10/10 execuções)
+Processing: i160-223.stp        ... [OK] (10/10 execuções)
+Processing: i160-224.stp        ... [OK] (10/10 execuções)
+Processing: i160-225.stp        ... [OK] (10/10 execuções)
+Processing: i160-231.stp        ... [OK] (10/10 execuções)
+Processing: i160-232.stp        ... [OK] (10/10 execuções)
+Processing: i160-233.stp        ... [OK] (10/10 execuções)
+Processing: i160-234.stp        ... [OK] (10/10 execuções)
+Processing: i160-235.stp        ... [OK] (10/10 execuções)
+Processing: i160-241.stp        ... [OK] (10/10 execuções)
+Processing: i160-242.stp        ... [OK] (10/10 execuções)
+Processing: i160-243.stp        ... [OK] (10/10 execuções)
+Processing: i160-244.stp        ... [OK] (10/10 execuções)
+Processing: i160-245.stp        ... [OK] (10/10 execuções)
+Processing: i160-301.stp        ... [OK] (10/10 execuções)
+Processing: i160-302.stp        ... [OK] (10/10 execuções)
+Processing: i160-303.stp        ... [OK] (10/10 execuções)
+Processing: i160-304.stp        ... [OK] (10/10 execuções)
+Processing: i160-305.stp        ... [OK] (10/10 execuções)
+Processing: i160-311.stp        ... [OK] (10/10 execuções)
+Processing: i160-312.stp        ... [OK] (10/10 execuções)
+Processing: i160-313.stp        ... [OK] (10/10 execuções)
+Processing: i160-314.stp        ... [OK] (10/10 execuções)
+Processing: i160-315.stp        ... [OK] (10/10 execuções)
+Processing: i160-321.stp        ... [OK] (10/10 execuções)
+Processing: i160-322.stp        ... [OK] (10/10 execuções)
+Processing: i160-323.stp        ... [OK] (10/10 execuções)
+Processing: i160-324.stp        ... [OK] (10/10 execuções)
+Processing: i160-325.stp        ... [OK] (10/10 execuções)
+Processing: i160-331.stp        ... [OK] (10/10 execuções)
+Processing: i160-332.stp        ... [OK] (10/10 execuções)
+Processing: i160-333.stp        ... [OK] (10/10 execuções)
+Processing: i160-334.stp        ... [OK] (10/10 execuções)
+Processing: i160-335.stp        ... [OK] (10/10 execuções)
+Processing: i160-341.stp        ... [OK] (10/10 execuções)
+Processing: i160-342.stp        ... [OK] (10/10 execuções)
+Processing: i160-343.stp        ... [OK] (10/10 execuções)
+Processing: i160-344.stp        ... [OK] (10/10 execuções)
+Processing: i160-345.stp        ... [OK] (10/10 execuções)
+Processing: i320-001.stp        ... [OK] (10/10 execuções)
+Processing: i320-002.stp        ... [OK] (10/10 execuções)
+Processing: i320-003.stp        ... [OK] (10/10 execuções)
+Processing: i320-004.stp        ... [OK] (10/10 execuções)
+Processing: i320-005.stp        ... [OK] (10/10 execuções)
+Processing: i320-011.stp        ... [OK] (10/10 execuções)
+Processing: i320-012.stp        ... [OK] (10/10 execuções)
+Processing: i320-013.stp        ... [OK] (10/10 execuções)
+Processing: i320-014.stp        ... [OK] (10/10 execuções)
+Processing: i320-015.stp        ... [OK] (10/10 execuções)
+Processing: i320-021.stp        ... [OK] (10/10 execuções)
+Processing: i320-022.stp        ... [OK] (10/10 execuções)
+Processing: i320-023.stp        ... [OK] (10/10 execuções)
+Processing: i320-024.stp        ... [OK] (10/10 execuções)
+Processing: i320-025.stp        ... [OK] (10/10 execuções)
+Processing: i320-031.stp        ... [OK] (10/10 execuções)
+Processing: i320-032.stp        ... [OK] (10/10 execuções)
+Processing: i320-033.stp        ... [OK] (10/10 execuções)
+Processing: i320-034.stp        ... [OK] (10/10 execuções)
+Processing: i320-035.stp        ... [OK] (10/10 execuções)
+Processing: i320-041.stp        ... [OK] (10/10 execuções)
+Processing: i320-042.stp        ... [OK] (10/10 execuções)
+Processing: i320-043.stp        ... [OK] (10/10 execuções)
+Processing: i320-044.stp        ... [OK] (10/10 execuções)
+Processing: i320-045.stp        ... [OK] (10/10 execuções)
+Processing: i320-101.stp        ... [OK] (10/10 execuções)
+Processing: i320-102.stp        ... [OK] (10/10 execuções)
+Processing: i320-103.stp        ... [OK] (10/10 execuções)
+Processing: i320-104.stp        ... [OK] (10/10 execuções)
+Processing: i320-105.stp        ... [OK] (10/10 execuções)
+Processing: i320-111.stp        ... [OK] (10/10 execuções)
+Processing: i320-112.stp        ... [OK] (10/10 execuções)
+Processing: i320-113.stp        ... [OK] (10/10 execuções)
+Processing: i320-114.stp        ... [OK] (10/10 execuções)
+Processing: i320-115.stp        ... [OK] (10/10 execuções)
+Processing: i320-121.stp        ... [OK] (10/10 execuções)
+Processing: i320-122.stp        ... [OK] (10/10 execuções)
+Processing: i320-123.stp        ... [OK] (10/10 execuções)
+Processing: i320-124.stp        ... [OK] (10/10 execuções)
+Processing: i320-125.stp        ... [OK] (10/10 execuções)
+Processing: i320-131.stp        ... [OK] (10/10 execuções)
+Processing: i320-132.stp        ... [OK] (10/10 execuções)
+Processing: i320-133.stp        ... [OK] (10/10 execuções)
+Processing: i320-134.stp        ... [OK] (10/10 execuções)
+Processing: i320-135.stp        ... [OK] (10/10 execuções)
+Processing: i320-141.stp        ... [OK] (10/10 execuções)
+Processing: i320-142.stp        ... [OK] (10/10 execuções)
+Processing: i320-143.stp        ... [OK] (10/10 execuções)
+Processing: i320-144.stp        ... [OK] (10/10 execuções)
+Processing: i320-145.stp        ... [OK] (10/10 execuções)
+Processing: i320-201.stp        ... [OK] (10/10 execuções)
+Processing: i320-202.stp        ... [OK] (10/10 execuções)
+Processing: i320-203.stp        ... [OK] (10/10 execuções)
+Processing: i320-204.stp        ... [OK] (10/10 execuções)
+Processing: i320-205.stp        ... [OK] (10/10 execuções)
+Processing: i320-211.stp        ... [OK] (10/10 execuções)
+Processing: i320-212.stp        ... [OK] (10/10 execuções)
+Processing: i320-213.stp        ... [OK] (10/10 execuções)
+Processing: i320-214.stp        ... [OK] (10/10 execuções)
+Processing: i320-215.stp        ... [OK] (10/10 execuções)
+Processing: i320-221.stp        ... [OK] (10/10 execuções)
+Processing: i320-222.stp        ... [OK] (10/10 execuções)
+Processing: i320-223.stp        ... [OK] (10/10 execuções)
+Processing: i320-224.stp        ... [OK] (10/10 execuções)
+Processing: i320-225.stp        ... [OK] (10/10 execuções)
+Processing: i320-231.stp        ... [OK] (10/10 execuções)
+Processing: i320-232.stp        ... [OK] (10/10 execuções)
+Processing: i320-233.stp        ... [OK] (10/10 execuções)
+Processing: i320-234.stp        ... [OK] (10/10 execuções)
+Processing: i320-235.stp        ... [OK] (10/10 execuções)
+Processing: i320-241.stp        ... [OK] (10/10 execuções)
+Processing: i320-242.stp        ... [OK] (10/10 execuções)
+Processing: i320-243.stp        ... [OK] (10/10 execuções)
+Processing: i320-244.stp        ... [OK] (10/10 execuções)
+Processing: i320-245.stp        ... [OK] (10/10 execuções)
+Processing: i320-301.stp        ... [OK] (10/10 execuções)
+Processing: i320-302.stp        ... [OK] (10/10 execuções)
+Processing: i320-303.stp        ... [OK] (10/10 execuções)
+Processing: i320-304.stp        ... [OK] (10/10 execuções)
+Processing: i320-305.stp        ... [OK] (10/10 execuções)
+Processing: i320-311.stp        ... [OK] (10/10 execuções)
+Processing: i320-312.stp        ... [OK] (10/10 execuções)
+Processing: i320-313.stp        ... [OK] (10/10 execuções)
+Processing: i320-314.stp        ... [OK] (10/10 execuções)
+Processing: i320-315.stp        ... [OK] (10/10 execuções)
+Processing: i320-321.stp        ... [OK] (10/10 execuções)
+Processing: i320-322.stp        ... [OK] (10/10 execuções)
+Processing: i320-323.stp        ... [OK] (10/10 execuções)
+Processing: i320-324.stp        ... [OK] (10/10 execuções)
+Processing: i320-325.stp        ... [OK] (10/10 execuções)
+Processing: i320-331.stp        ... [OK] (10/10 execuções)
+Processing: i320-332.stp        ... [OK] (10/10 execuções)
+Processing: i320-333.stp        ... [OK] (10/10 execuções)
+Processing: i320-334.stp        ... [OK] (10/10 execuções)
+Processing: i320-335.stp        ... [OK] (10/10 execuções)
+Processing: i320-341.stp        ... [OK] (10/10 execuções)
+Processing: i320-342.stp        ... [OK] (10/10 execuções)
+Processing: i320-343.stp        ... [OK] (10/10 execuções)
+Processing: i320-344.stp        ... [OK] (10/10 execuções)
+Processing: i320-345.stp        ... [OK] (10/10 execuções)
+Processing: i640-001.stp        ... [OK] (10/10 execuções)
+Processing: i640-002.stp        ... [OK] (10/10 execuções)
+Processing: i640-003.stp        ... [OK] (10/10 execuções)
+Processing: i640-004.stp        ... [OK] (10/10 execuções)
+Processing: i640-005.stp        ... [OK] (10/10 execuções)
+Processing: i640-011.stp        ... [OK] (10/10 execuções)
+Processing: i640-012.stp        ... [OK] (10/10 execuções)
+Processing: i640-013.stp        ... [OK] (10/10 execuções)
+Processing: i640-014.stp        ... [OK] (10/10 execuções)
+Processing: i640-015.stp        ... [OK] (10/10 execuções)
+Processing: i640-021.stp        ... [OK] (10/10 execuções)
+Processing: i640-022.stp        ... [OK] (10/10 execuções)
+Processing: i640-023.stp        ... [OK] (10/10 execuções)
+Processing: i640-024.stp        ... [OK] (10/10 execuções)
+Processing: i640-025.stp        ... [OK] (10/10 execuções)
+Processing: i640-031.stp        ... [OK] (10/10 execuções)
+Processing: i640-032.stp        ... [OK] (10/10 execuções)
+Processing: i640-033.stp        ... [OK] (10/10 execuções)
+Processing: i640-034.stp        ... [OK] (10/10 execuções)
+Processing: i640-035.stp        ... [OK] (10/10 execuções)
+Processing: i640-041.stp        ... [OK] (10/10 execuções)
+Processing: i640-042.stp        ... [OK] (10/10 execuções)
+Processing: i640-043.stp        ... [OK] (10/10 execuções)
+Processing: i640-044.stp        ... [OK] (10/10 execuções)
+Processing: i640-045.stp        ... [OK] (10/10 execuções)
+Processing: i640-101.stp        ... [OK] (10/10 execuções)
+Processing: i640-102.stp        ... [OK] (10/10 execuções)
+Processing: i640-103.stp        ... [OK] (10/10 execuções)
+Processing: i640-104.stp        ... [OK] (10/10 execuções)
+Processing: i640-105.stp        ... [OK] (10/10 execuções)
+Processing: i640-111.stp        ... [OK] (10/10 execuções)
+Processing: i640-112.stp        ... [OK] (10/10 execuções)
+Processing: i640-113.stp        ... [OK] (10/10 execuções)
+Processing: i640-114.stp        ... [OK] (10/10 execuções)
+Processing: i640-115.stp        ... [OK] (10/10 execuções)
+Processing: i640-121.stp        ... [OK] (10/10 execuções)
+Processing: i640-122.stp        ... [OK] (10/10 execuções)
+Processing: i640-123.stp        ... [OK] (10/10 execuções)
+Processing: i640-124.stp        ... [OK] (10/10 execuções)
+Processing: i640-125.stp        ... [OK] (10/10 execuções)
+Processing: i640-131.stp        ... [OK] (10/10 execuções)
+Processing: i640-132.stp        ... [OK] (10/10 execuções)
+Processing: i640-133.stp        ... [OK] (10/10 execuções)
+Processing: i640-134.stp        ... [OK] (10/10 execuções)
+Processing: i640-135.stp        ... [OK] (10/10 execuções)
+Processing: i640-141.stp        ... [OK] (10/10 execuções)
+Processing: i640-142.stp        ... [OK] (10/10 execuções)
+Processing: i640-143.stp        ... [OK] (10/10 execuções)
+Processing: i640-144.stp        ... [OK] (10/10 execuções)
+Processing: i640-145.stp        ... [OK] (10/10 execuções)
+Processing: i640-201.stp        ... [OK] (10/10 execuções)
+Processing: i640-202.stp        ... [OK] (10/10 execuções)
+Processing: i640-203.stp        ... [OK] (10/10 execuções)
+Processing: i640-204.stp        ... [OK] (10/10 execuções)
+Processing: i640-205.stp        ... [OK] (10/10 execuções)
+Processing: i640-211.stp        ... [OK] (10/10 execuções)
+Processing: i640-212.stp        ... [OK] (10/10 execuções)
+Processing: i640-213.stp        ... [OK] (10/10 execuções)
+Processing: i640-214.stp        ... [OK] (10/10 execuções)
+Processing: i640-215.stp        ... [OK] (10/10 execuções)
+Processing: i640-221.stp        ... [OK] (10/10 execuções)
+Processing: i640-222.stp        ... [OK] (10/10 execuções)
+Processing: i640-223.stp        ... [OK] (10/10 execuções)
+Processing: i640-224.stp        ... [OK] (10/10 execuções)
+Processing: i640-225.stp        ... [OK] (10/10 execuções)
+Processing: i640-231.stp        ... [OK] (10/10 execuções)
+Processing: i640-232.stp        ... [OK] (10/10 execuções)
+Processing: i640-233.stp        ... [OK] (10/10 execuções)
+Processing: i640-234.stp        ... [OK] (10/10 execuções)
+Processing: i640-235.stp        ... [OK] (10/10 execuções)
+Processing: i640-241.stp        ... [OK] (10/10 execuções)
+Processing: i640-242.stp        ... [OK] (10/10 execuções)
+Processing: i640-243.stp        ... [OK] (10/10 execuções)
+Processing: i640-244.stp        ... [OK] (10/10 execuções)
+Processing: i640-245.stp        ... [OK] (10/10 execuções)
+Processing: i640-301.stp        ... [OK] (10/10 execuções)
+Processing: i640-302.stp        ... [OK] (10/10 execuções)
+Processing: i640-303.stp        ... [OK] (10/10 execuções)
+Processing: i640-304.stp        ... [OK] (10/10 execuções)
+Processing: i640-305.stp        ... [OK] (10/10 execuções)
+Processing: i640-311.stp        ... [OK] (10/10 execuções)
+Processing: i640-312.stp        ... [OK] (10/10 execuções)
+Processing: i640-313.stp        ... [OK] (10/10 execuções)
+Processing: i640-314.stp        ... [OK] (10/10 execuções)
+Processing: i640-315.stp        ... [OK] (10/10 execuções)
+Processing: i640-321.stp        ... [OK] (10/10 execuções)
+Processing: i640-322.stp        ... [OK] (10/10 execuções)
+Processing: i640-323.stp        ... [OK] (10/10 execuções)
+Processing: i640-324.stp        ... [OK] (10/10 execuções)
+Processing: i640-325.stp        ... [OK] (10/10 execuções)
+Processing: i640-331.stp        ... [OK] (10/10 execuções)
+Processing: i640-332.stp        ... [OK] (10/10 execuções)
+Processing: i640-333.stp        ... [OK] (10/10 execuções)
+Processing: i640-334.stp        ... [OK] (10/10 execuções)
+Processing: i640-335.stp        ... [OK] (10/10 execuções)
+Processing: i640-341.stp        ... [OK] (10/10 execuções)
+Processing: i640-342.stp        ... [OK] (10/10 execuções)
+Processing: i640-343.stp        ... [OK] (10/10 execuções)
+Processing: i640-344.stp        ... [OK] (10/10 execuções)
+Processing: i640-345.stp        ... [OK] (10/10 execuções)
+Processing: b01.stp             ... [OK] (10/10 execuções)
+Processing: b02.stp             ... [OK] (10/10 execuções)
+Processing: b03.stp             ... [OK] (10/10 execuções)
+Processing: b04.stp             ... [OK] (10/10 execuções)
+Processing: b05.stp             ... [OK] (10/10 execuções)
+Processing: b06.stp             ... [OK] (10/10 execuções)
+Processing: b07.stp             ... [OK] (10/10 execuções)
+Processing: b08.stp             ... [OK] (10/10 execuções)
+Processing: b09.stp             ... [OK] (10/10 execuções)
+Processing: b10.stp             ... [OK] (10/10 execuções)
+Processing: b11.stp             ... [OK] (10/10 execuções)
+Processing: b12.stp             ... [OK] (10/10 execuções)
+Processing: b13.stp             ... [OK] (10/10 execuções)
+Processing: b14.stp             ... [OK] (10/10 execuções)
+Processing: b15.stp             ... [OK] (10/10 execuções)
+Processing: b16.stp             ... [OK] (10/10 execuções)
+Processing: b17.stp             ... [OK] (10/10 execuções)
+Processing: b18.stp             ... [OK] (10/10 execuções)
+Processing: c01.stp             ... [FALHOU OU TIMEOUT TOTAL]
+Processing: c02.stp             ... [OK] (10/10 execuções)
+Processing: c03.stp             ... [OK] (10/10 execuções)
+Processing: c04.stp             ... [OK] (10/10 execuções)
+Processing: c05.stp             ... [OK] (10/10 execuções)
+Processing: c06.stp             ... [OK] (10/10 execuções)
+Processing: c07.stp             ... [OK] (10/10 execuções)
+Processing: c08.stp             ... [OK] (10/10 execuções)
+Processing: c09.stp             ... [OK] (10/10 execuções)
+Processing: c10.stp             ... [OK] (10/10 execuções)
+Processing: c11.stp             ... [OK] (10/10 execuções)
+Processing: c12.stp             ... [OK] (10/10 execuções)
+Processing: c13.stp             ... [OK] (10/10 execuções)
+Processing: c14.stp             ... [OK] (10/10 execuções)
+Processing: c15.stp             ... [OK] (6/10 execuções)
+Processing: c16.stp             ... [OK] (10/10 execuções)
+Processing: c17.stp             ... [OK] (10/10 execuções)
+Processing: c18.stp             ... [OK] (10/10 execuções)
+Processing: c19.stp             ... [OK] (10/10 execuções)
+Processing: c20.stp             ... [OK] (4/10 execuções)
+Processing: d01.stp             ... [OK] (10/10 execuções)
+Processing: d02.stp             ... [OK] (10/10 execuções)
+Processing: d03.stp             ... [OK] (10/10 execuções)
+Processing: d04.stp             ... [OK] (10/10 execuções)
+Processing: d05.stp             ... [OK] (4/10 execuções)
+Processing: d06.stp             ... [OK] (10/10 execuções)
+Processing: d07.stp             ... [OK] (10/10 execuções)
+Processing: d08.stp             ... [OK] (10/10 execuções)
+Processing: d09.stp             ... [OK] (6/10 execuções)
+Processing: d10.stp             ... [OK] (1/10 execuções)
+Processing: d11.stp             ... [OK] (10/10 execuções)
+Processing: d12.stp             ... [OK] (10/10 execuções)
+Processing: d13.stp             ... [OK] (9/10 execuções)
+Processing: d14.stp             ... [OK] (4/10 execuções)
+Processing: d15.stp             ... [OK] (1/10 execuções)
+Processing: d16.stp             ... [OK] (10/10 execuções)
+Processing: d17.stp             ... [OK] (10/10 execuções)
+Processing: d18.stp             ... [OK] (6/10 execuções)
+Processing: d19.stp             ... [OK] (2/10 execuções)
+Processing: d20.stp             ... [FALHOU OU TIMEOUT TOTAL]
+Processing: e01.stp             ... [OK] (10/10 execuções)
+Processing: e02.stp             ... [OK] (10/10 execuções)
+Processing: e03.stp             ... [OK] (2/10 execuções)
+Processing: e04.stp             ... [OK] (1/10 execuções)
+Processing: e05.stp             ... [FALHOU OU TIMEOUT TOTAL]
+Processing: e06.stp             ... [OK] (10/10 execuções)
+Processing: e07.stp             ... [OK] (10/10 execuções)
+Processing: e08.stp             ... [OK] (1/10 execuções)
+Processing: e09.stp             ... [FALHOU OU TIMEOUT TOTAL]
+Processing: e10.stp             ... [FALHOU OU TIMEOUT TOTAL]
+Processing: e11.stp             ... [OK] (10/10 execuções)
+Processing: e12.stp             ... [OK] (10/10 execuções)
+Processing: e13.stp             ... [FALHOU OU TIMEOUT TOTAL]
+Processing: e14.stp             ... [FALHOU OU TIMEOUT TOTAL]
+Processing: e15.stp             ... [FALHOU OU TIMEOUT TOTAL]
+Processing: e16.stp             ... [OK] (10/10 execuções)
+Processing: e17.stp             ... [OK] (10/10 execuções)
+Processing: e18.stp             ... [FALHOU OU TIMEOUT TOTAL]
+Processing: e19.stp             ... [FALHOU OU TIMEOUT TOTAL]
+Processing: e20.stp             ... [FALHOU OU TIMEOUT TOTAL]
+Processing: mc11.stp            ... [OK] (5/10 execuções)
+Processing: mc7.stp             ... [OK] (10/10 execuções)
+Processing: mc8.stp             ... [OK] (9/10 execuções)
+Processing: p602.stp            ... [OK] (10/10 execuções)
+Processing: p603.stp            ... [OK] (10/10 execuções)
+Processing: p604.stp            ... [OK] (10/10 execuções)
+Processing: p605.stp            ... [OK] (10/10 execuções)
+Processing: p606.stp            ... [OK] (10/10 execuções)
+Processing: p607.stp            ... [OK] (10/10 execuções)
+Processing: p608.stp            ... [OK] (10/10 execuções)
+Processing: p609.stp            ... [OK] (10/10 execuções)
+Processing: p610.stp            ... [OK] (10/10 execuções)
+Processing: p611.stp            ... [OK] (10/10 execuções)
+Processing: p612.stp            ... [OK] (10/10 execuções)
+Processing: p613.stp            ... [OK] (10/10 execuções)
+Processing: p614.stp            ... [OK] (10/10 execuções)
+Processing: p615.stp            ... [OK] (10/10 execuções)
+Processing: p616.stp            ... [OK] (10/10 execuções)
+Processing: alue2087.stp        ... [OK] (10/10 execuções)
+Processing: alue2105.stp        ... [OK] (10/10 execuções)
+Processing: alue3146.stp        ... [OK] (5/10 execuções)
+Processing: alue5067.stp        ... [OK] (6/10 execuções)
+Processing: alue5345.stp        ... [OK] (1/10 execuções)
+Processing: alue5623.stp        ... [OK] (2/10 execuções)
+Processing: alue5901.stp        ... [OK] (1/10 execuções)
+Processing: alue6179.stp        ... [OK] (5/10 execuções)
+Processing: alue6457.stp        ... [OK] (3/10 execuções)
+Processing: alue6735.stp        ... [OK] (4/10 execuções)
+Processing: alue6951.stp        ... [OK] (8/10 execuções)
+Processing: alue7065.stp        ... [FALHOU OU TIMEOUT TOTAL]
+Processing: alue7066.stp        ... [OK] (6/10 execuções)
+Processing: alue7080.stp        ... [FALHOU OU TIMEOUT TOTAL]
+Processing: alue7229.stp        ... [OK] (10/10 execuções)
+Processing: alut0787.stp        ... [OK] (10/10 execuções)
+Processing: alut0805.stp        ... [OK] (10/10 execuções)
+Processing: alut1181.stp        ... [OK] (4/10 execuções)
+Processing: alut2010.stp        ... [OK] (1/10 execuções)
+Processing: alut2288.stp        ... [OK] (1/10 execuções)
+Processing: alut2566.stp        ... [OK] (2/10 execuções)
+Processing: alut2610.stp        ... [FALHOU OU TIMEOUT TOTAL]
+Processing: alut2625.stp        ... [FALHOU OU TIMEOUT TOTAL]
+Processing: alut2764.stp        ... [OK] (10/10 execuções)
+Processing: diw0234.stp         ... [OK] (6/10 execuções)
+Processing: diw0250.stp         ... [OK] (10/10 execuções)
+Processing: diw0260.stp         ... [OK] (10/10 execuções)
+Processing: diw0313.stp         ... [OK] (10/10 execuções)
+Processing: diw0393.stp         ... [OK] (10/10 execuções)
+Processing: diw0445.stp         ... [OK] (10/10 execuções)
+Processing: diw0459.stp         ... [OK] (10/10 execuções)
+Processing: diw0460.stp         ... [OK] (10/10 execuções)
+Processing: diw0473.stp         ... [OK] (10/10 execuções)
+Processing: diw0487.stp         ... [OK] (10/10 execuções)
+Processing: diw0495.stp         ... [OK] (10/10 execuções)
+Processing: diw0513.stp         ... [OK] (10/10 execuções)
+Processing: diw0523.stp         ... [OK] (10/10 execuções)
+Processing: diw0540.stp         ... [OK] (10/10 execuções)
+Processing: diw0559.stp         ... [OK] (10/10 execuções)
+Processing: diw0778.stp         ... [OK] (6/10 execuções)
+Processing: diw0779.stp         ... [FALHOU OU TIMEOUT TOTAL]
+Processing: diw0795.stp         ... [OK] (10/10 execuções)
+Processing: diw0801.stp         ... [OK] (10/10 execuções)
+Processing: diw0819.stp         ... [OK] (1/10 execuções)
+Processing: diw0820.stp         ... [OK] (1/10 execuções)
+Processing: lin01.stp           ... [OK] (10/10 execuções)
+Processing: lin02.stp           ... [OK] (10/10 execuções)
+Processing: lin03.stp           ... [OK] (10/10 execuções)
+Processing: lin04.stp           ... [OK] (10/10 execuções)
+Processing: lin05.stp           ... [OK] (10/10 execuções)
+Processing: lin06.stp           ... [OK] (10/10 execuções)
+Processing: lin07.stp           ... [OK] (10/10 execuções)
+Processing: lin08.stp           ... [OK] (10/10 execuções)
+Processing: lin09.stp           ... [OK] (10/10 execuções)
+Processing: lin10.stp           ... [OK] (10/10 execuções)
+Processing: lin11.stp           ... [OK] (10/10 execuções)
+Processing: lin12.stp           ... [OK] (10/10 execuções)
+Processing: lin13.stp           ... [OK] (10/10 execuções)
+Processing: lin14.stp           ... [OK] (10/10 execuções)
+Processing: lin15.stp           ... [OK] (10/10 execuções)
+Processing: lin16.stp           ... [OK] (10/10 execuções)
+Processing: lin17.stp           ... [OK] (10/10 execuções)
+Processing: lin18.stp           ... [OK] (10/10 execuções)
+Processing: lin19.stp           ... [OK] (10/10 execuções)
+Processing: lin20.stp           ... [OK] (10/10 execuções)
+Processing: lin21.stp           ... [OK] (10/10 execuções)
+Processing: lin22.stp           ... [OK] (10/10 execuções)
+Processing: lin23.stp           ... [OK] (3/10 execuções)
+Processing: lin24.stp           ... [OK] (6/10 execuções)
+Processing: lin25.stp           ... [OK] (2/10 execuções)
+Processing: lin26.stp           ... [OK] (1/10 execuções)
+Processing: lin27.stp           ... [OK] (2/10 execuções)
+Processing: lin28.stp           ... [FALHOU OU TIMEOUT TOTAL]
+Processing: lin29.stp           ... [FALHOU OU TIMEOUT TOTAL]
+Processing: lin30.stp           ... [OK] (1/10 execuções)
+Processing: lin31.stp           ... [FALHOU OU TIMEOUT TOTAL]
+Processing: lin32.stp           ... [FALHOU OU TIMEOUT TOTAL]
+Processing: lin33.stp           ... [FALHOU OU TIMEOUT TOTAL]
+Processing: lin34.stp           ... [FALHOU OU TIMEOUT TOTAL]
+Processing: lin35.stp           ... [FALHOU OU TIMEOUT TOTAL]
+Processing: lin36.stp           ... [FALHOU OU TIMEOUT TOTAL]
+Processing: lin37.stp           ... [FALHOU OU TIMEOUT TOTAL]
+Processing: wrp3-11.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-12.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-13.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-14.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-15.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-16.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-17.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-19.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-20.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-21.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-22.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-23.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-24.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-25.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-26.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-27.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-28.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-29.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-30.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-31.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-33.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-34.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-36.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-37.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-38.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-39.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-41.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-42.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-43.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-45.stp         ... [OK] (9/10 execuções)
+Processing: wrp3-48.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-49.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-50.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-52.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-53.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-55.stp         ... [OK] (8/10 execuções)
+Processing: wrp3-56.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-60.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-62.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-64.stp         ... [OK] (8/10 execuções)
+Processing: wrp3-66.stp         ... [OK] (3/10 execuções)
+Processing: wrp3-67.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-69.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-70.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-71.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-73.stp         ... [OK] (6/10 execuções)
+Processing: wrp3-74.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-75.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-76.stp         ... [OK] (7/10 execuções)
+Processing: wrp3-78.stp         ... [OK] (2/10 execuções)
+Processing: wrp3-79.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-80.stp         ... [OK] (6/10 execuções)
+Processing: wrp3-83.stp         ... [OK] (2/10 execuções)
+Processing: wrp3-84.stp         ... [OK] (4/10 execuções)
+Processing: wrp3-85.stp         ... [OK] (10/10 execuções)
+Processing: wrp3-86.stp         ... [OK] (5/10 execuções)
+Processing: wrp3-88.stp         ... [OK] (8/10 execuções)
+Processing: wrp3-91.stp         ... [OK] (6/10 execuções)
+Processing: wrp3-92.stp         ... [OK] (5/10 execuções)
+Processing: wrp3-94.stp         ... [OK] (5/10 execuções)
+Processing: wrp3-95.stp         ... [FALHOU OU TIMEOUT TOTAL]
+Processing: wrp3-96.stp         ... [OK] (3/10 execuções)
+Processing: wrp3-98.stp         ... [OK] (4/10 execuções)
+Processing: wrp3-99.stp         ... [OK] (2/10 execuções)
+Processing: wrp4-11.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-13.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-14.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-15.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-16.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-17.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-18.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-19.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-21.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-22.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-23.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-24.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-25.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-26.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-27.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-28.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-29.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-30.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-31.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-32.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-33.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-34.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-35.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-36.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-37.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-38.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-39.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-40.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-41.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-42.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-43.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-44.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-45.stp         ... [OK] (10/10 execuções)
+Processing: wrp4-46.stp         ...
